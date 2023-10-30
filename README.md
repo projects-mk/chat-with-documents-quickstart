@@ -1,4 +1,4 @@
-docker-compose which will setup a streamlit app and vector database (Qdrant)
+docker-compose which will setup a streamlit app (as a demo, once backend is confirmed to be working it can be swiched to Flask or Django) and vector database (Qdrant)
 inside there will be an option to submit documents for a embedding and save to vector DB
 then user can ask what they want
 
