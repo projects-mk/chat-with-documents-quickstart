@@ -1,4 +1,7 @@
 # Byte-compiled / optimized / DLL files
+storage/*
+*.ipynb
+samples/*.pdf
 __pycache__/
 *.py[cod]
 *$py.class

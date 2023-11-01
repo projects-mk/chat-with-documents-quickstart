@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  main_app:
+    image: kurdzik/chat_with_docs:latest
+    ports:
+      - "80:80"
+    env_file:
+      - dev.env
+    depends_on:
+      - serviceName: vector_db
+        condition: service_completed_successfully
+      - serviceName: app_db
+        condition: service_completed_successfully
+    networks:
+      - main_network
+
+  vector_db:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    networks:
+      - main_network
+
+  app_db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_USER: postgres
+    networks:
+      - main_network
+
+networks:
+  main_network:
