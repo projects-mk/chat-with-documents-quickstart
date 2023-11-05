@@ -1,7 +1,7 @@
 import yaml
 
 
-def load_config(config_path='app_cfg.yaml', custom_key=None):
+def load_config(config_path='app.conf', custom_key=None):
 
     with open(config_path, encoding='utf-8') as file:
         data = file.read()
@@ -9,3 +9,6 @@ def load_config(config_path='app_cfg.yaml', custom_key=None):
 
     if custom_key:
         return data[custom_key]
+
+    else:
+        return data
