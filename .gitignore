@@ -1,8 +1,7 @@
 # Byte-compiled / optimized / DLL files
 testing/*
-storage/*
-*.ipynb
-samples/*.pdf
+**storage/*
+**.ipynb
 __pycache__/
 *.py[cod]
 *$py.class
