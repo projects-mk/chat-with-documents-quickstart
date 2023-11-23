@@ -1,11 +1,35 @@
-docker-compose which will setup a streamlit app (as a demo, once backend is confirmed to be working it can be swiched to Flask or Django) and vector database (Qdrant)
-inside there will be an option to submit documents for a embedding and save to vector DB
-then user can ask what they want
+# TODO
 
-Potential use cases (maybe create multiple apps which contain the same base logic?)
-- Submitt long contracts so that user can ask about specifications? Maybe use different LLM with domain specific knowledge as a backend?
-- Submit research papers, or include some integration with https://arxiv.org/?
-- Submit code documentation ?
-- Scrape financial data from public sources (KRS, bankier, biznesradar) so that user can compare companies on some deeper level ?
-  
- **Idea of this project is to get proficient with creating RAGs** with both, models avaiable through apis and custom huggingface models.  
+### App Functionalities
+    - [ ] Resources tab - Add conditional visibilit to Cluster (only show this when deployed on k8s)
+    - [ ] Add "Generate Api Key" button
+    - [x] Make Frontend wider
+    - [ ] Add Chatting module
+        - [ ] Chat with documents
+        - [ ] Chat with code snippets
+
+### Vector Store
+    - [x] Setup
+    - [ ] Enable Api Keys protection
+    - [ ] Add Api Keys generation and hashing
+
+### Add SFTP Store
+    - [ ] Setup Minio
+    - [ ] Add ability to connect custom store like AWS 3 bucket or Azure blob
+
+### App Database
+    - [ ] Setup
+    - [ ] Define variables to store
+
+### Multi Tenancy
+    - [ ] Add multi account ability
+    - [ ] Add LDAP Auth
+    - [ ] (Optional) Add SAML Auth (this will require another service)
+
+### Deployment
+    - [ ] Docker (via docker compose)
+    - [ ] Kubernetes
+
+
+### Frontend
+placeholder
