@@ -8,14 +8,15 @@ services:
     ports:
       - "80:8501"
     environment:
-      OPENAI_APIKEY: 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
+      # OPENAI_APIKEY:
       QDRANT_HOST: http://vector_db:6333
       DATABASE_HOST: http://app_db:5432
       K8S_DEPLOYMENT: False
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: main_app
-
+    env_file:
+      - ../.env
     depends_on:
       - vector_db
       - db
