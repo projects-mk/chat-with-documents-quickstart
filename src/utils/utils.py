@@ -5,6 +5,8 @@ import requests
 import streamlit as st
 
 import kubernetes
+import psycopg2
+from psycopg2.errors import OperationalError
 
 
 def clear_cache():
@@ -12,8 +14,6 @@ def clear_cache():
 
 
 # flake8: noqa: E501
-
-
 def show_pdf_uplaoded(bytes_data):
     base64_pdf = base64.b64encode(bytes_data).decode('utf-8')
     pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="100" type="application/pdf"></iframe>'
@@ -46,8 +46,14 @@ class CheckResources:
     @st.cache_data
     def check_database():
         try:
-            response = requests.get(os.getenv('DATABASE_HOST'))
-            if response.status_code == 200:
+            response = psycopg2.connect(
+                host=os.getenv('DATABASE_HOST'),
+                port='5432',
+                password=os.getenv('POSTGRES_PASSWORD'),
+                user=os.getenv('POSTGRES_USER'),
+                database='postgres',
+            )
+            if response.code:
                 return 'Running'
-        except requests.exceptions.ConnectionError:
+        except OperationalError:
             return 'Unavailable'

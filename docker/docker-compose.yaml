@@ -2,32 +2,38 @@ version: '3.8'
 
 services:
   main_app:
-    image: kurdzik/chat_with_docs:latest
+    build:
+      context: ..
+      dockerfile: build/Dockerfile
     ports:
-      - "80:80"
-    env_file:
-      - dev.env
+      - "80:8501"
+    environment:
+      OPENAI_APIKEY: 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
+      QDRANT_HOST: http://vector_db:6333
+      DATABASE_HOST: http://app_db:5432
+      K8S_DEPLOYMENT: False
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: main_app
+
     depends_on:
-      - serviceName: vector_db
-        condition: service_completed_successfully
-      - serviceName: app_db
-        condition: service_completed_successfully
+      - vector_db
+      - db
     networks:
       - main_network
 
   vector_db:
     image: qdrant/qdrant:latest
-    ports:
-      - "6333:6333"
     networks:
       - main_network
 
-  app_db:
+  db:
     image: postgres:latest
     restart: always
     environment:
-      POSTGRES_PASSWORD: example
+      POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
+      POSTGRES_DB: main_app
     networks:
       - main_network
 
