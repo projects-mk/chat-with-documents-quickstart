@@ -35,3 +35,13 @@ font-weight: bold;
 .dataframe td {
 text-align: left;
 }
+
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+
+.bottom-button {
+    position: fixed;
+    bottom: 20px;
+    right: 50%;
+    transform: translateX(-50%);
+  }

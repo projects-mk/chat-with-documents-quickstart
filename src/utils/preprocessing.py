@@ -15,11 +15,11 @@ class MakeEmbeddings:
 
     @staticmethod
     def _chunk_docs(text):
-        text_splitter = RecursiveCharacterTextSplitter()
-        docs = [
-            Document(page_content=x)
-            for x in text_splitter.split_text(text)
-        ]
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000, chunk_overlap=50,
+        )
+        docs = [Document(page_content=x)
+                for x in text_splitter.split_text(text)]
         return docs
 
     @staticmethod
@@ -27,7 +27,7 @@ class MakeEmbeddings:
         if method == 'HuggingFace':
             return HuggingFaceEmbeddings()
         elif method == 'OpenAI':
-            return OpenAIEmbeddings()
+            return OpenAIEmbeddings(openai_api_key=os.getenv('OPENAI_APIKEY'))
 
     def save_embeddings(self):
         Qdrant.from_documents(
@@ -41,8 +41,5 @@ class MakeEmbeddings:
 
         self.docs = self._chunk_docs(self.text)
 
-        method = st.selectbox(
-            'Select Embedding Method',
-            ['HuggingFace', 'OpenAI'],
-        )
+        method = st.selectbox('Select Embedding Method', ['OpenAI'])
         self.embedding_model = self._select_embedding_method(method)

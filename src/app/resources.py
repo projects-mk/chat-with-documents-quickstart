@@ -1,39 +1,47 @@
 import os
 
-import requests
+import pandas as pd
 import streamlit as st
+from dotenv import load_dotenv
 
-import kubernetes
+from utils.data_loaders import HtmlLoader, StylesLoader
+from utils.utils import CheckResources
+
+load_dotenv('../.env')
 
 
-class CheckResources:
-    @staticmethod
-    @st.cache_data
-    def check_qdrant():
-        try:
-            response = requests.get(os.getenv('QDRANT_HOST'))
-            if response.status_code == 200:
-                return 'Running'
-        except requests.exceptions.ConnectionError:
-            return 'Unavailable'
+if __name__ == '__main__':
+    st.set_page_config(
+        page_title='DocSearch.ai',
+        page_icon='📜',
+        layout='wide',
+        initial_sidebar_state='expanded',
+    )
 
-    @staticmethod
-    @st.cache_data
-    def check_cluster():
-        try:
-            kubernetes.config.load_kube_config()
-            api = kubernetes.client.CoreV1Api()
-            api.list_namespaced_pod(namespace='default')
-            return 'Running'
-        except kubernetes.config.config_exception.ConfigException:
-            return 'Unavailable'
+    css_file_path = 'templates/styles/styles.css'
+    CSS = StylesLoader(css_file_path=css_file_path).load()
+    st.markdown(CSS, unsafe_allow_html=True)
 
-    @staticmethod
-    @st.cache_data
-    def check_database():
-        try:
-            response = requests.get(os.getenv('DATABASE_HOST'))
-            if response.status_code == 200:
-                return 'Running'
-        except requests.exceptions.ConnectionError:
-            return 'Unavailable'
+    avaiable_resources = pd.DataFrame()
+
+    avaiable_resources['Vector Datastore'] = [
+        CheckResources.check_qdrant(),
+    ]
+    avaiable_resources['Database'] = [CheckResources.check_database()]
+
+    if os.getenv('K8S_DEPLOYMENT') != 'False':
+        avaiable_resources['Cluster'] = [CheckResources.check_cluster()]
+
+    st.dataframe(
+        avaiable_resources.T.reset_index().rename(
+            {0: 'Status', 'index': 'Resource'}, axis=1,
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    for i in avaiable_resources:
+        os.environ[i] = avaiable_resources[i][0]
+
+    st.markdown('<br>', unsafe_allow_html=True)
+    st.button('Create API Key for Vector Database')
