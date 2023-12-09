@@ -38,5 +38,12 @@ services:
     networks:
       - main_network
 
+  llm:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    networks:
+      - main_network
+
 networks:
   main_network:

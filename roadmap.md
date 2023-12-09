@@ -7,15 +7,13 @@
     - [x] Add Chatting module
         - [x] Chat with documents
         - [ ] Chat with code snippets
+    - [ ] enable postgres as a noversation history holder
+    - [ ] add 'clear convo' button
 
 ### Vector Store
     - [x] Setup
     - [ ] Enable Api Keys protection
     - [ ] Add Api Keys generation and hashing
-
-### Add SFTP Store
-    - [ ] Setup Minio
-    - [ ] Add ability to connect custom store like AWS 3 bucket or Azure blob
 
 ### App Database
     - [x] Setup

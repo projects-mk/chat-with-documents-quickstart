@@ -12,13 +12,22 @@ from utils.conf_loaders import load_config
 from utils.data_loaders import DocumentLoader, StylesLoader
 from utils.preprocessing import MakeEmbeddings
 from utils.chatbot import ChatBot
+from utils.utils import CheckResources
 
 app_config = load_config()
 app_info_texts = app_config['info_texts']
 
 models = load_config(custom_key='models')
+embeddings_methods = load_config(custom_key='embeddings')
 
 load_dotenv('../.env')
+
+
+def get_datastore_status():
+    status = os.getenv('Vector Datastore')
+    if status:
+        return status
+    return CheckResources.check_qdrant()
 
 
 if __name__ == '__main__':
@@ -33,7 +42,7 @@ if __name__ == '__main__':
     CSS = StylesLoader(css_file_path=css_file_path).load()
     st.markdown(CSS, unsafe_allow_html=True)
 
-    if os.getenv('Vector Datastore') == 'Running':
+    if get_datastore_status() == 'Running':
 
         option_selected = option_menu(
             menu_title='',
@@ -85,33 +94,26 @@ if __name__ == '__main__':
                     model = st.selectbox(
                         label='Model', options=models[model_provider],
                     )
-
                 with col4:
                     embdedding_method = st.selectbox(
-                        label='Embedding Method', options=['OpenAI'],
+                        label='Embedding Method', options=[None] + embeddings_methods,
                     )
 
-                # with st.expander(label="Initial Query"):
                 st.divider()
-                initial_query = st.text_input(
-                    label='Initial Query', value='What is this document about ?', label_visibility='hidden',
+
+                bot = ChatBot(
+                    selected_collection=selected_collection,
+                    selected_model_provider=model_provider,
+                    selected_model=model,
+                    vector_db_client=client,
+                    embedding_method=embdedding_method,
                 )
-                st.session_state['start_chat'] = st.button(
-                    label='Start Chat', type='secondary', use_container_width=True,
-                )
 
-                if st.session_state['start_chat']:
-                    st.divider()
-
-                    bot = ChatBot(
-                        initial_query=initial_query,
-                        selected_collection=selected_collection,
-                        selected_model=model,
-                        vector_db_client=client,
-                        embedding_method=embdedding_method,
-                    )
-
-                    bot.start_chatting()
+                # try:
+                bot.start_chatting()
+                # except ValueError:
+                #     # Not all values are selected - do nothing
+                #     pass
 
             except KeyError:
                 st.write(app_info_texts['no_collections_found'])

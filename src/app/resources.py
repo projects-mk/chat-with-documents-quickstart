@@ -27,10 +27,10 @@ if __name__ == '__main__':
     avaiable_resources['Vector Datastore'] = [
         CheckResources.check_qdrant(),
     ]
-    avaiable_resources['Database'] = [CheckResources.check_database()]
 
-    if os.getenv('K8S_DEPLOYMENT') != 'False':
-        avaiable_resources['Cluster'] = [CheckResources.check_cluster()]
+    avaiable_resources['Self-hosted LLM'] = [
+        CheckResources.check_llm(),
+    ]
 
     st.dataframe(
         avaiable_resources.T.reset_index().rename(
