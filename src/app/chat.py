@@ -4,6 +4,7 @@ import time
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
 
 from qdrant_client import QdrantClient
 from streamlit_option_menu import option_menu
@@ -81,7 +82,7 @@ if __name__ == '__main__':
                     )
 
                 st.subheader('Get answers from uploaded documents')
-                col1, col2, col3, col4 = st.columns(4)
+                col1, col2, col3 = st.columns(3)
                 with col1:
                     selected_collection = st.selectbox(
                         label='Collection', options=collections_dict.values(),
@@ -94,10 +95,14 @@ if __name__ == '__main__':
                     model = st.selectbox(
                         label='Model', options=models[model_provider],
                     )
-                with col4:
-                    embdedding_method = st.selectbox(
-                        label='Embedding Method', options=[None] + embeddings_methods,
-                    )
+                engine = create_engine(os.getenv('DATABASE_CONN_STRING'))
+                df = pd.read_sql_table('embedding_mappings', engine)
+
+                mapping = df.loc[df['collection'] == selected_collection].to_dict(orient='records')[
+                    0
+                ]
+                embedding_model_provider = mapping['embedding_model_provider']
+                embedding_model = mapping['embedding_model_name']
 
                 st.divider()
 
@@ -106,7 +111,8 @@ if __name__ == '__main__':
                     selected_model_provider=model_provider,
                     selected_model=model,
                     vector_db_client=client,
-                    embedding_method=embdedding_method,
+                    embedding_model_provider=embedding_model_provider,
+                    embedding_model=embedding_model,
                 )
 
                 # try:

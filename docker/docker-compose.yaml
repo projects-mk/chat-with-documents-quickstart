@@ -8,23 +8,28 @@ services:
     ports:
       - "80:8501"
     environment:
-      # OPENAI_APIKEY:
       QDRANT_HOST: http://vector_db:6333
-      DATABASE_HOST: http://app_db:5432
-      K8S_DEPLOYMENT: False
+      LLM_HOST: http://llm:11434
+      DATABASE_CONN_STRING: "postgresql+psycopg2://postgres:postgres@db:5432/main_app"
+      K8S_DEPLOYMENT: "False"
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: main_app
-    env_file:
-      - ../.env
+      # OPENAI_APIKEY: ""
+      # HUGGINGFACE_HUB_API_KEY: ""
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - vector_db
       - db
+      - llm
     networks:
       - main_network
 
   vector_db:
     image: qdrant/qdrant:latest
+    ports:
+      - "6330:6333"
     networks:
       - main_network
 
@@ -35,15 +40,24 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: main_app
+    ports:
+      - "5432:5432"
     networks:
       - main_network
+
 
   llm:
     image: ollama/ollama:latest
     ports:
-      - "11434:11434"
+      - "11435:11434"
     networks:
       - main_network
-
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
 networks:
   main_network:

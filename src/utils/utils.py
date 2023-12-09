@@ -4,8 +4,7 @@ import os
 import requests
 import streamlit as st
 
-import kubernetes
-import psycopg2
+from sqlalchemy import create_engine
 from psycopg2.errors import OperationalError
 from dotenv import load_dotenv
 
@@ -33,6 +32,16 @@ class CheckResources:
             if response.status_code == 200:
                 return 'Running'
         except requests.exceptions.ConnectionError:
+            return 'Unavailable'
+
+    def check_db():
+        try:
+            conn_string = os.getenv('DATABASE_CONN_STRING')
+            engine = create_engine(conn_string)
+            engine.connect()
+            return 'Running'
+
+        except OperationalError:
             return 'Unavailable'
 
     @staticmethod
