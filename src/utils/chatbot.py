@@ -11,7 +11,6 @@ from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
 from langchain.vectorstores import Qdrant
 from qdrant_client import QdrantClient
 from langchain.chat_models import ChatOpenAI, ChatOllama
-from langchain.llms import Ollama
 import docker
 
 
@@ -56,7 +55,7 @@ class ChatBot:
 
     def _setup_llm(self):
         if self.selected_model_provider == 'HuggingFace':
-            llm = Ollama(
+            llm = ChatOllama(
                 model=self.selected_model,
                 base_url=os.getenv('LLM_HOST'),
             )
