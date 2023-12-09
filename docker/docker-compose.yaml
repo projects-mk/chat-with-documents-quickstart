@@ -2,9 +2,10 @@ version: '3.8'
 
 services:
   main_app:
-    build:
-      context: ..
-      dockerfile: build/Dockerfile
+    image: kurdzik/chat-with-documents:latest
+    # build:
+    #   context: ..
+    #   dockerfile: build/Dockerfile
     ports:
       - "80:8501"
     environment:
