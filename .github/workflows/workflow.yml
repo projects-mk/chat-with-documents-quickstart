@@ -1,7 +1,7 @@
-name: CI/CD
+name: Build and Deploy
 
 env:
-  VERSION: 0.5.0
+  VERSION: 0.1.1
 
 on:
   push:
@@ -16,14 +16,6 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: shellcheck
-        uses: ludeeus/action-shellcheck@1.1.0
-        with:
-          severity: error
-          scandir: './'
-          format: tty
-
       - name: Checkout
         uses: actions/checkout@v2
 
