@@ -1,5 +1,8 @@
 name: CI/CD
 
+env:
+  VERSION: 0.5.0
+
 on:
   push:
     branches:
@@ -29,9 +32,11 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: build and push
-        run: make TAG=$VERSION
-
-      - name: build and push latest
-        run: make TAG=latest
+      - name: Build and push
+        run: |
+          docker build -t kurdzik/chat-with-documents -f build/Dockerfile .
+          docker push kurdzik/chat-with-documents:${{ env.VERSION}}
+      - name: Build and push latest
+        run: |
+          docker build -t kurdzik/chat-with-documents -f build/Dockerfile .
+          docker push kurdzik/chat-with-documents:latest
