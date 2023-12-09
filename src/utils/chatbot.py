@@ -2,8 +2,7 @@ import os
 
 import streamlit as st
 from langchain.chains import ConversationalRetrievalChain
-from langchain.chat_models import ChatOpenAI
-from langchain.embeddings import HuggingFaceEmbeddings, OpenAIEmbeddings
+from langchain.embeddings import HuggingFaceEmbeddings, OpenAIEmbeddings, OllamaEmbeddings
 from langchain.memory import (
     ConversationBufferMemory,
     StreamlitChatMessageHistory,
@@ -11,14 +10,18 @@ from langchain.memory import (
 from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
 from langchain.vectorstores import Qdrant
 from qdrant_client import QdrantClient
-import os
 from langchain.chat_models import ChatOpenAI
 from langchain.llms import HuggingFaceHub
-import streamlit as st
 
 
 class ChatBot:
-    def __init__(self, selected_collection, selected_model_provider, selected_model, vector_db_client, embedding_method) -> None:
+    def __init__(
+        self, selected_collection,
+        selected_model_provider,
+        selected_model,
+        vector_db_client,
+        embedding_method,
+    ) -> None:
         self.selected_collection = selected_collection
         self.vector_db_client = vector_db_client
         self.selected_model_provider = selected_model_provider
@@ -26,11 +29,21 @@ class ChatBot:
         self.embedding_method = embedding_method
 
     @staticmethod
-    def _select_embedding_method(method):
-        if method == 'HuggingFace':
-            return HuggingFaceEmbeddings()
-        elif method == 'OpenAI':
-            return OpenAIEmbeddings(openai_api_key=os.getenv('OPENAI_APIKEY'))
+    def _select_embedding_method(provider, model):
+        if provider == 'HuggingFace':
+            if model in ['all-mpnet-base-v2']:
+                return HuggingFaceEmbeddings(model_name=model)
+            else:
+                OllamaEmbeddings(
+                    base_url=os.getenv('LLM_HOST'),
+                    model=model,
+                )
+
+        elif provider == 'OpenAI':
+            return OpenAIEmbeddings(
+                openai_api_key=os.getenv('OPENAI_APIKEY'),
+                model=model,
+            )
 
     @staticmethod
     def _select_model_params(self):
