@@ -10,8 +10,9 @@ from langchain.memory import (
 from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
 from langchain.vectorstores import Qdrant
 from qdrant_client import QdrantClient
-from langchain.chat_models import ChatOpenAI
-from langchain.llms import HuggingFaceHub
+from langchain.chat_models import ChatOpenAI, ChatOllama
+from langchain.llms import Ollama
+import docker
 
 
 class ChatBot:
@@ -20,30 +21,34 @@ class ChatBot:
         selected_model_provider,
         selected_model,
         vector_db_client,
-        embedding_method,
+        embedding_model_provider,
+        embedding_model,
     ) -> None:
         self.selected_collection = selected_collection
         self.vector_db_client = vector_db_client
         self.selected_model_provider = selected_model_provider
         self.selected_model = selected_model
-        self.embedding_method = embedding_method
+        self.embedding_model_provider = embedding_model_provider
+        self.embedding_model = embedding_model
 
     @staticmethod
-    def _select_embedding_method(provider, model):
+    def _download_manifests(model):
+        client = docker.from_env()
+        client.containers.get('docker-llm-1').exec_run(f'ollama run {model}')
+
+    def _select_embedding_method(self, provider, model):
         if provider == 'HuggingFace':
             if model in ['all-mpnet-base-v2']:
                 return HuggingFaceEmbeddings(model_name=model)
-            else:
-                OllamaEmbeddings(
-                    base_url=os.getenv('LLM_HOST'),
-                    model=model,
-                )
+            elif model is not None:
+                with st.spinner('Downloading Model Manifests...'):
+                    self._download_manifests(model)
+
+                return OllamaEmbeddings(base_url=os.getenv('LLM_HOST'), model=model)
 
         elif provider == 'OpenAI':
-            return OpenAIEmbeddings(
-                openai_api_key=os.getenv('OPENAI_APIKEY'),
-                model=model,
-            )
+            if model is not None:
+                return OpenAIEmbeddings(openai_api_key=os.getenv('OPENAI_APIKEY'), model=model)
 
     @staticmethod
     def _select_model_params(self):
@@ -51,9 +56,9 @@ class ChatBot:
 
     def _setup_llm(self):
         if self.selected_model_provider == 'HuggingFace':
-            llm = HuggingFaceHub(
-                repo_id=self.selected_model,
-                model_kwargs={'temperature': 0.5, 'max_length': 64},
+            llm = Ollama(
+                model=self.selected_model,
+                base_url=os.getenv('LLM_HOST'),
             )
 
             return llm
@@ -97,7 +102,9 @@ class ChatBot:
 
     def start_chatting(self):
 
-        embeddings = self._select_embedding_method(self.embedding_method)
+        embeddings = self._select_embedding_method(
+            self.embedding_model_provider, self.embedding_model,
+        )
 
         # Connect with Vector DB
         with st.spinner('Connecting to Vector DB...'):

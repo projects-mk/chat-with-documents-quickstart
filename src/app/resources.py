@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 
-from utils.data_loaders import HtmlLoader, StylesLoader
+from utils.data_loaders import StylesLoader
 from utils.utils import CheckResources
 
 load_dotenv('../.env')
@@ -26,6 +26,10 @@ if __name__ == '__main__':
 
     avaiable_resources['Vector Datastore'] = [
         CheckResources.check_qdrant(),
+    ]
+
+    avaiable_resources['App Database'] = [
+        CheckResources.check_db(),
     ]
 
     avaiable_resources['Self-hosted LLM'] = [

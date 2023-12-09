@@ -8,6 +8,8 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Qdrant
 from utils.conf_loaders import load_config
 import docker
+import pandas as pd
+from sqlalchemy import create_engine
 
 embeddings_providers = load_config(custom_key='embeddings').keys()
 embeddings_models = load_config(custom_key='embeddings')
@@ -38,19 +40,57 @@ class MakeEmbeddings:
         client = docker.from_env()
         client.containers.get('docker-llm-1').exec_run(f'ollama run {model}')
 
-    def _select_embedding_method(self, provider, model):
-        if provider == 'HuggingFace':
-            if model in ['all-mpnet-base-v2']:
-                return HuggingFaceEmbeddings(model_name=model)
-            elif model is not None:
+    def _select_embedding_method(self):
+        if self.provider == 'HuggingFace':
+            if self.model in ['all-mpnet-base-v2']:
+                return HuggingFaceEmbeddings(model_name=self.model)
+            elif self.model is not None:
                 with st.spinner('Downloading Model Manifests...'):
-                    self._download_manifests(model)
+                    self._download_manifests(self.model)
 
-                return OllamaEmbeddings(base_url=os.getenv('LLM_HOST'), model=model)
+                return OllamaEmbeddings(base_url=os.getenv('LLM_HOST'), model=self.model)
 
-        elif provider == 'OpenAI':
-            if model is not None:
-                return OpenAIEmbeddings(openai_api_key=os.getenv('OPENAI_APIKEY'), model=model)
+        elif self.provider == 'OpenAI':
+            if self.model is not None:
+                return OpenAIEmbeddings(openai_api_key=os.getenv('OPENAI_APIKEY'), model=self.model)
+
+    @staticmethod
+    def _create_engine():
+        engine = create_engine(os.getenv('DATABASE_CONN_STRING'))
+        return engine
+
+    def _save_mapping(self):
+        engine = self._create_engine()
+
+        df = pd.DataFrame(
+            columns=[
+                'collection', 'embedding_model_provider',
+                'embedding_model_name',
+            ],
+        )
+
+        df['collection'] = [self.collection_name]
+        df['embedding_model_provider'] = [self.provider]
+        df['embedding_model_name'] = [self.model]
+
+        df.to_sql(
+            'embedding_mappings', engine,
+            if_exists='append', index=False,
+        )
+
+    def __call__(self) -> Any:
+        self.docs = self._chunk_docs(self.text)
+
+        self.provider = st.selectbox(
+            'Select Embedding Method', embeddings_providers,
+        )
+        self.model = st.selectbox(
+            'Select Embedding Model', [
+                None,
+            ] + embeddings_models[self.provider],
+        )
+
+        self.embedding_model = self._select_embedding_method()
 
     def save_embeddings(self):
         Qdrant.from_documents(
@@ -60,17 +100,4 @@ class MakeEmbeddings:
             collection_name=self.collection_name,
         )
 
-    def __call__(self) -> Any:
-
-        self.docs = self._chunk_docs(self.text)
-
-        provider = st.selectbox(
-            'Select Embedding Method', embeddings_providers,
-        )
-        model = st.selectbox(
-            'Select Embedding Model', [
-                None,
-            ] + embeddings_models[provider],
-        )
-
-        self.embedding_model = self._select_embedding_method(provider, model)
+        self._save_mapping()
