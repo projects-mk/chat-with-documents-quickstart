@@ -142,11 +142,10 @@ class ChatBot:
                     'Select Chat', all_chats['chat_name'].unique(),
                 )
                 self._create_new_chat_window()
+                return chat_id
             except ValueError:
                 self._create_new_chat_window()
-
             st.divider()
-        return chat_id
 
     @staticmethod
     def _print_sources(sources):

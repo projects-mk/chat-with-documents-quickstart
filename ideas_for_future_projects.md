@@ -8,5 +8,3 @@ Potential use cases (maybe create multiple apps which contain the same base logi
 - Submit code documentation ?
 - Scrape financial data from public sources (KRS, bankier, biznesradar) so that user can compare companies on some deeper level ?
 - Assistant (this will scrape data from RSS feeds and save those to vector DB), will accept voice commands and will be able to respond also using voice
-
- **Idea of this project is to get proficient with creating RAGs** with both, models avaiable through apis and custom huggingface models.
