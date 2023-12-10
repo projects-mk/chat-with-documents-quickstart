@@ -16,5 +16,13 @@ Just remember to add necessary api keys for example if you want to use OpenAI mo
 
 2. Upload PDF document
     ![image](imgs/upload_and_embed.png)
+<br>
 
-3.
+3. Create new chat
+    ![image](imgs/start_chat.png)
+
+
+<br>
+
+4. Start Chatting, in this case using smallest possible llm (zephyr3b)
+    ![image](imgs/example_query.png)

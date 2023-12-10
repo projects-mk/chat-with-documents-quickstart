@@ -89,7 +89,7 @@ class ChatBot:
     @staticmethod
     def _clear_chat(chat_history):
         with st.sidebar:
-            if st.button('Clear converstaion history', use_container_width=True):
+            if st.button('Reset converstaion', use_container_width=True):
                 chat_history.clear()
                 st.rerun()
 
