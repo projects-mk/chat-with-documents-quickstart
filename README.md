@@ -1,7 +1,20 @@
-### Setup
+### Deployment options
+- **Docker** :
+    - Go to docker dir and them to cpu-only or gpu and run `docker compose up -d`
+- **Kubernetes**:
+    - Not yet supported
 
-go to `docker` provide OPENAI api key, and run `docker compose up`
+Just remember to add necessary api keys for example if you want to use OpenAI models, provide OPENAI api key in docker-compose file
+<hr>
 
-### Easily Ask questions about your documents
-- Supports different embeddings and language models
-- Supports different document stores (sftp, s3-compatibile storages, google drive)
+### Usage
+
+1. Check if everthing is connected correctly in **`Resources`** tab
+    ![image](imgs/resources.png)
+
+<br>
+
+2. Upload PDF document
+    ![image](imgs/upload_and_embed.png)
+
+3.

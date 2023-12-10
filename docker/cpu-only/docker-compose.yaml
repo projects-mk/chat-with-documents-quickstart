@@ -21,6 +21,7 @@ services:
       LLM_HOST: http://llm:11434
       DATABASE_CONN_STRING: "postgresql://postgres:postgres@db:5432/main_app"
       K8S_DEPLOYMENT: "False"
+      LLM_CONTAINER_NAME: "cpu-only-llm-1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:

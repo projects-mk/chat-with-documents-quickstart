@@ -38,7 +38,9 @@ class ChatBot:
     @staticmethod
     def _download_manifests(model):
         client = docker.from_env()
-        client.containers.get('docker-llm-1').exec_run(f'ollama run {model}')
+        client.containers.get(
+            os.getenv('LLM_CONTAINER_NAME'),
+        ).exec_run(f'ollama run {model}')
 
     def _select_embedding_method(self, provider, model):
         if provider == 'HuggingFace':
