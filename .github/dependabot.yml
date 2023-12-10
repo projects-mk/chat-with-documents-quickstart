@@ -1,14 +1,14 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directory: "/"
+    directory: "/build"
     schedule:
       interval: "weekly"
     commit-message:
       prefix: "[pip]"
 
   - package-ecosystem: "docker"
-    directory: "/"
+    directory: "/build"
     schedule:
       interval: "weekly"
     commit-message:
