@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-
 import streamlit as st
 from dotenv import load_dotenv
-
 from st_pages import Page, show_pages
 
 from utils.conf_loaders import load_config

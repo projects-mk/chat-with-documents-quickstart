@@ -1,0 +1,55 @@
+version: '3.8'
+x-common-environment: &common-environment
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_USER: postgres
+  POSTGRES_DB: main_app
+
+x-common-networks: &common-networks
+  - main_network
+
+services:
+  main_app:
+   # build:
+    #   context: ..
+    #   dockerfile: build/Dockerfile
+    ports:
+      - "80:8501"
+    environment:
+      <<: *common-environment
+      QDRANT_HOST: http://vector_db:6333
+      LLM_HOST: http://llm:11434
+      DATABASE_CONN_STRING: "postgresql://postgres:postgres@db:5432/main_app"
+      K8S_DEPLOYMENT: "False"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - vector_db
+      - db
+      - llm
+    networks: *common-networks
+
+  vector_db:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6330:6333"
+    networks: *common-networks
+
+  db:
+    image: postgres:latest
+    restart: always
+    environment: *common-environment
+    networks: *common-networks
+
+  llm:
+    image: ollama/ollama:latest
+    networks: *common-networks
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+networks:
+  main_network:

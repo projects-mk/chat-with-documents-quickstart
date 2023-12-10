@@ -4,15 +4,14 @@ import time
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
-
 from qdrant_client import QdrantClient
+from sqlalchemy import create_engine
 from streamlit_option_menu import option_menu
 
+from utils.chatbot import ChatBot
 from utils.conf_loaders import load_config
 from utils.data_loaders import DocumentLoader, StylesLoader
 from utils.preprocessing import MakeEmbeddings
-from utils.chatbot import ChatBot
 from utils.utils import CheckResources
 
 app_config = load_config()
