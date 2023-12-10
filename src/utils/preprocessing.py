@@ -1,15 +1,19 @@
 import os
 from typing import Any
 
+import docker
+import pandas as pd
 import streamlit as st
-from langchain.embeddings import HuggingFaceEmbeddings, OpenAIEmbeddings, OllamaEmbeddings
+from langchain.embeddings import (
+    HuggingFaceEmbeddings, OllamaEmbeddings,
+    OpenAIEmbeddings,
+)
 from langchain.schema.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Qdrant
-from utils.conf_loaders import load_config
-import docker
-import pandas as pd
 from sqlalchemy import create_engine
+
+from utils.conf_loaders import load_config
 
 embeddings_providers = load_config(custom_key='embeddings').keys()
 embeddings_models = load_config(custom_key='embeddings')

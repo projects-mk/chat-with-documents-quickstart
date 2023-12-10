@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     avaiable_resources = pd.DataFrame()
 
-    avaiable_resources['Vector Datastore'] = [
+    avaiable_resources['Vector Database'] = [
         CheckResources.check_qdrant(),
     ]
 

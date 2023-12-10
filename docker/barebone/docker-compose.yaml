@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  main_app:
+    image: kurdzik/chat-with-documents:latest
+    # build:
+    #   context: ..
+    #   dockerfile: build/Dockerfile
+    ports:
+      - "80:8501"
+    environment:
+      K8S_DEPLOYMENT: "False"
+      DATABASE_CONN_STRING: "postgresql+psycopg2://..."
+      POSTGRES_PASSWORD: ""
+      POSTGRES_USER: ""
+      POSTGRES_DB: ""
+      QDRANT_HOST: ""
+      LLM_HOST: ""
+      OPENAI_APIKEY: ""
+      HUGGINGFACE_HUB_API_KEY: ""
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

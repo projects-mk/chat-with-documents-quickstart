@@ -3,10 +3,9 @@ import os
 
 import requests
 import streamlit as st
-
-from sqlalchemy import create_engine
-from psycopg2.errors import OperationalError
 from dotenv import load_dotenv
+from psycopg2.errors import OperationalError
+from sqlalchemy import create_engine
 
 load_dotenv('../.env')
 

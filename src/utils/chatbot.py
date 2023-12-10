@@ -1,17 +1,20 @@
 import os
 
+import docker
+import pandas as pd
 import streamlit as st
-from langchain.chains import ConversationalRetrievalChain
-from langchain.embeddings import HuggingFaceEmbeddings, OpenAIEmbeddings, OllamaEmbeddings
-from langchain.memory import (
-    ConversationBufferMemory,
-    StreamlitChatMessageHistory,
+from langchain.chains.qa_with_sources.retrieval import \
+    RetrievalQAWithSourcesChain
+from langchain.chat_models import ChatOpenAI
+from langchain.embeddings import (
+    HuggingFaceEmbeddings, OllamaEmbeddings,
+    OpenAIEmbeddings,
 )
-from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
+from langchain.llms import Ollama
+from langchain.memory import PostgresChatMessageHistory
 from langchain.vectorstores import Qdrant
 from qdrant_client import QdrantClient
-from langchain.chat_models import ChatOpenAI, ChatOllama
-import docker
+from sqlalchemy import create_engine
 
 
 class ChatBot:
@@ -23,6 +26,8 @@ class ChatBot:
         embedding_model_provider,
         embedding_model,
     ) -> None:
+
+        self.mapping = {'ai': 'assistant', 'human': 'user'}
         self.selected_collection = selected_collection
         self.vector_db_client = vector_db_client
         self.selected_model_provider = selected_model_provider
@@ -55,7 +60,7 @@ class ChatBot:
 
     def _setup_llm(self):
         if self.selected_model_provider == 'HuggingFace':
-            llm = ChatOllama(
+            llm = Ollama(
                 model=self.selected_model,
                 base_url=os.getenv('LLM_HOST'),
             )
@@ -79,25 +84,72 @@ class ChatBot:
         )
         return vectordb
 
-    def _configure_qa_chain(self, llm, vector_db):
-        # Setup memory for llm
-        msgs = StreamlitChatMessageHistory()
-        memory = ConversationBufferMemory(
-            memory_key='chat_history', chat_memory=msgs, return_messages=True,
-        )
+    @staticmethod
+    def _clear_chat(chat_history):
+        with st.sidebar:
+            if st.button('Clear converstaion history', use_container_width=True):
+                chat_history.clear()
+                st.rerun()
 
-        # Instantiate QA chain
-        qa_chain = ConversationalRetrievalChain.from_llm(
+    def _configure_qa_chain(self, llm, vector_db):
+        qa_chain = RetrievalQAWithSourcesChain.from_chain_type(
             llm=llm,
-            chain_type='stuff',
             retriever=vector_db.as_retriever(
                 search_type='similarity',
             ),
-            memory=memory,
             verbose=True,
         )
 
         return qa_chain
+
+    @staticmethod
+    def _create_new_chat_window():
+        connection_string = os.getenv('DATABASE_CONN_STRING')
+        engine = create_engine(connection_string)
+
+        with st.expander('Create New Chat'):
+            form = st.form(key='new_chat_creation')
+
+            session_id = form.text_input(
+                label='New Chat', label_visibility='hidden', value='New Chat',
+            )
+            create = form.form_submit_button(
+                'Create', use_container_width=True,
+            )
+
+            if create:
+                df = pd.DataFrame()
+                df['chat_name'] = [session_id]
+                df['creation_date'] = [
+                    pd.Timestamp.now().strftime('%Y-%m-%d %H:%M'),
+                ]
+                df.to_sql(
+                    'chat_sessions', engine,
+                    if_exists='append', index=False,
+                )
+                st.toast('Chat Created Successfully!')
+                st.rerun()
+
+    def _get_chat_session_id(self):
+        with st.sidebar:
+            try:
+                all_chats = pd.read_sql_table(
+                    'chat_sessions', os.getenv('DATABASE_CONN_STRING'),
+                )
+                chat_id = st.selectbox(
+                    'Select Chat', all_chats['chat_name'].unique(),
+                )
+                self._create_new_chat_window()
+            except ValueError:
+                self._create_new_chat_window()
+
+            st.divider()
+        return chat_id
+
+    @staticmethod
+    def _print_sources(sources):
+        with st.expander('Sources'):
+            st.write(sources)
 
     def start_chatting(self):
 
@@ -116,35 +168,42 @@ class ChatBot:
         # Configure LLM chain
         with st.spinner('Configuring QA chain...'):
             qa_chain = self._configure_qa_chain(
-                llm=llm, vector_db=semantic_search,
+                llm=llm,
+                vector_db=semantic_search,
             )
 
+        current_chat = self._get_chat_session_id()
+
         # Initialize conversational history
-        if 'messages' not in st.session_state:
-            st.session_state['messages'] = [
-                {'role': 'assistant', 'content': 'Hi, how can I help you?'},
-            ]
+        history = PostgresChatMessageHistory(
+            connection_string=os.getenv('DATABASE_CONN_STRING'),
+            session_id=current_chat,
+        )
+
+        # Add chat history to sidebar button
+        self._clear_chat(history)
 
         # Print each message in chat field
-        for msg in st.session_state.messages:
-            st.chat_message(msg['role']).write(msg['content'])
+        for msg in history.messages:
+            st.chat_message(self.mapping[msg.type]).write(msg.content)
 
         # Wait for user input
         if prompt := st.chat_input(placeholder='Tell me more about this document'):
-            st.session_state.messages.append(
-                {'role': 'user', 'content': prompt},
-            )
+            history.add_user_message(prompt)
+
             st.chat_message('user').write(prompt)
 
             with st.spinner('Thinking...'):
                 # If user provides input, run the QA chain
                 try:
-                    if st.session_state.messages[-1]['role'] == 'user':
-                        response = qa_chain.run(prompt)
-                        st.session_state.messages.append(
-                            {'role': 'assistant', 'content': response},
-                        )
-                        st.chat_message('assistant').write(response)
+                    if self.mapping[[msg.type for msg in history.messages][-1]] == 'user':
+                        response = qa_chain(prompt)
+                        answer = response['answer']
+                        sources = response['sources']
+
+                        history.add_ai_message(answer)
+                        st.chat_message('assistant').write(answer)
+                        self._print_sources(sources)
 
                 # There are no messages in the chat written by user, do nothing
                 except IndexError:
