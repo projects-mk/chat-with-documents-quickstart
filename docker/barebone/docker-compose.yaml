@@ -4,7 +4,7 @@ services:
   main_app:
     image: kurdzik/chat-with-documents:latest
     # build:
-    #   context: ..
+    #   context: ../..
     #   dockerfile: build/Dockerfile
     ports:
       - "80:8501"
@@ -15,9 +15,9 @@ services:
       POSTGRES_USER: ""
       POSTGRES_DB: ""
       QDRANT_HOST: ""
-      LLM_HOST: ""
       OPENAI_APIKEY: ""
       HUGGINGFACE_HUB_API_KEY: ""
+      LLM_HOST: ""
       LLM_CONTAINER_NAME: ""
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

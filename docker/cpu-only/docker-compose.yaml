@@ -10,9 +10,10 @@ x-common-networks: &common-networks
 services:
   main_app:
     # build:
-    #   context: ..
+    #   context: ../..
     #   dockerfile: build/Dockerfile
     image: kurdzik/chat-with-documents:latest
+    # cpus: "8"
     ports:
       - "80:8501"
     environment:

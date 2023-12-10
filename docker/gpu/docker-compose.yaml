@@ -10,7 +10,7 @@ x-common-networks: &common-networks
 services:
   main_app:
    # build:
-    #   context: ..
+    #   context: ../..
     #   dockerfile: build/Dockerfile
     image: kurdzik/chat-with-documents:latest
     ports:
