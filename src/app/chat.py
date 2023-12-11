@@ -13,11 +13,10 @@ from utils.conf_loaders import load_config
 from utils.data_loaders import DocumentLoader, StylesLoader
 from utils.preprocessing import MakeEmbeddings
 from utils.utils import CheckResources
-from selenium import webdriver
-from selenium.webdriver import FirefoxOptions
-options = FirefoxOptions()
-options.headless = True
-driver = webdriver.Firefox(options=options)
+from urllib.parse import urlparse
+
+frontend_url = request.META.get('HTTP_REFERER')
+url = urlparse(frontend_url)
 
 app_config = load_config()
 app_info_texts = app_config['info_texts']
@@ -58,32 +57,13 @@ if __name__ == '__main__':
         if option_selected == 'Existing Documents':
 
             try:
-                with st.expander(label='All Collections'):
-                    client = QdrantClient(url=os.getenv('QDRANT_HOST'))
-                    collections_dict = {
-                        index: collection.name
-                        for index, collection in enumerate(
-                            dict(client.get_collections())['collections'],
-                        )
-                    }
-                    collections_df = pd.DataFrame.from_dict(
-                        collections_dict, orient='index',
-                    ).rename({0: 'Document Store Name'}, axis=1)
-
-                    collections_df['Metadata'] = (
-                        os.getenv('QDRANT_HOST')
-                        + '/dashboard#/collections/'
-                        + collections_df['Document Store Name']
+                client = QdrantClient(url=os.getenv('QDRANT_HOST'))
+                collections_dict = {
+                    index: collection.name
+                    for index, collection in enumerate(
+                        dict(client.get_collections())['collections'],
                     )
-
-                    st.dataframe(
-                        collections_df, use_container_width=True, hide_index=True,
-                    )
-
-                    st.link_button(
-                        'Manage yours collections',
-                        driver.current_url + '/dashboard#/collections/',
-                    )
+                }
 
                 st.subheader('Get answers from uploaded documents')
                 col1, col2, col3 = st.columns(3)
