@@ -111,12 +111,12 @@ class CheckResources:
         Returns:
             str: 'Running' if the service is available, 'Unavailable' otherwise.
         """
-        conn_string = os.getenv('DATABASE_CONN_STRING')
-        engine = create_engine(conn_string)
-        df = pd.read_sql_table('monitoring', engine)
-        monitoring_dict = df.to_dict(orient='records')[0]
-        print(monitoring_dict)
+
         try:
+            conn_string = os.getenv('DATABASE_CONN_STRING')
+            engine = create_engine(conn_string)
+            df = pd.read_sql_table('monitoring', engine)
+            monitoring_dict = df.to_dict(orient='records')[0]
             handler = CallbackHandler(
                 host=monitoring_dict['LANGFUSE_SERVER_URL'],
                 public_key=monitoring_dict['LANGFUSE_PUBLIC_KEY'],
