@@ -13,17 +13,13 @@ from utils.conf_loaders import load_config
 from utils.data_loaders import DocumentLoader, StylesLoader
 from utils.preprocessing import MakeEmbeddings
 from utils.utils import CheckResources
-from urllib.parse import urlparse
-
-frontend_url = request.META.get('HTTP_REFERER')
-url = urlparse(frontend_url)
 
 app_config = load_config()
 app_info_texts = app_config['info_texts']
 
 models = load_config(custom_key='models')
 embeddings_methods = load_config(custom_key='embeddings')
-
+engine = create_engine(os.getenv('DATABASE_CONN_STRING'))
 load_dotenv('../.env')
 
 
@@ -76,10 +72,18 @@ if __name__ == '__main__':
                         label='Model provider', options=models.keys(),
                     )
                 with col3:
-                    model = st.selectbox(
-                        label='Model', options=models[model_provider],
-                    )
-                engine = create_engine(os.getenv('DATABASE_CONN_STRING'))
+                    if model_provider == 'HuggingFace':
+                        llms = pd.read_sql_table('llm_models', engine)
+                        downloaded_llms = llms['model_name'].unique().tolist()
+                        model = st.selectbox(
+                            label='Model', options=downloaded_llms,
+                        )
+
+                    else:
+                        model = st.selectbox(
+                            label='Model', options=models[model_provider],
+                        )
+
                 df = pd.read_sql_table('embedding_mappings', engine)
 
                 mapping = df.loc[df['collection'] == selected_collection].to_dict(orient='records')[
@@ -99,13 +103,13 @@ if __name__ == '__main__':
                     embedding_model=embedding_model,
                 )
 
-                # try:
-                bot.start_chatting()
-                # except ValueError:
-                #     # Not all values are selected - do nothing
-                #     pass
+                try:
+                    bot.start_chatting()
+                except ValueError:
+                    # Not all values are selected - do nothing
+                    pass
 
-            except KeyError:
+            except (KeyError, ValueError):
                 st.write(app_info_texts['no_collections_found'])
 
         elif option_selected == 'Upload New Documents':

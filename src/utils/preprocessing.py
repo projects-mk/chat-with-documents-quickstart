@@ -1,11 +1,11 @@
 import os
 from typing import Any
 
-import docker
+
 import pandas as pd
 import streamlit as st
 from langchain.embeddings import (
-    HuggingFaceEmbeddings, OllamaEmbeddings,
+    HuggingFaceEmbeddings,
     OpenAIEmbeddings,
 )
 from langchain.schema.document import Document
@@ -39,25 +39,12 @@ class MakeEmbeddings:
         ]
         return docs
 
-    @staticmethod
-    def _download_manifests(model):
-        client = docker.from_env()
-        client.containers.get(
-            os.getenv('LLM_CONTAINER_NAME'),
-        ).exec_run(f'ollama run {model}')
-
     def _select_embedding_method(self):
-        if self.provider == 'HuggingFace':
-            if self.model in ['all-mpnet-base-v2']:
+        if self.model is not None:
+            if self.provider == 'HuggingFace':
                 return HuggingFaceEmbeddings(model_name=self.model)
-            elif self.model is not None:
-                with st.spinner('Downloading Model Manifests...'):
-                    self._download_manifests(self.model)
 
-                return OllamaEmbeddings(base_url=os.getenv('LLM_HOST'), model=self.model)
-
-        elif self.provider == 'OpenAI':
-            if self.model is not None:
+            elif self.provider == 'OpenAI':
                 return OpenAIEmbeddings(openai_api_key=os.getenv('OPENAI_APIKEY'), model=self.model)
 
     @staticmethod

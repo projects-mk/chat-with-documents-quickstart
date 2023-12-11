@@ -15,6 +15,7 @@ from langchain.memory import PostgresChatMessageHistory
 from langchain.vectorstores import Qdrant
 from qdrant_client import QdrantClient
 from sqlalchemy import create_engine
+from langfuse.callback import CallbackHandler
 
 
 class ChatBot:
@@ -35,25 +36,12 @@ class ChatBot:
         self.embedding_model_provider = embedding_model_provider
         self.embedding_model = embedding_model
 
-    @staticmethod
-    def _download_manifests(model):
-        client = docker.from_env()
-        client.containers.get(
-            os.getenv('LLM_CONTAINER_NAME'),
-        ).exec_run(f'ollama run {model}')
-
     def _select_embedding_method(self, provider, model):
-        if provider == 'HuggingFace':
-            if model in ['all-mpnet-base-v2']:
+        if model is not None:
+            if provider == 'HuggingFace':
                 return HuggingFaceEmbeddings(model_name=model)
-            elif model is not None:
-                with st.spinner('Downloading Model Manifests...'):
-                    self._download_manifests(model)
 
-                return OllamaEmbeddings(base_url=os.getenv('LLM_HOST'), model=model)
-
-        elif provider == 'OpenAI':
-            if model is not None:
+            elif provider == 'OpenAI':
                 return OpenAIEmbeddings(openai_api_key=os.getenv('OPENAI_APIKEY'), model=model)
 
     @staticmethod
@@ -62,6 +50,7 @@ class ChatBot:
 
     def _setup_llm(self):
         if self.selected_model_provider == 'HuggingFace':
+
             llm = Ollama(
                 model=self.selected_model,
                 base_url=os.getenv('LLM_HOST'),

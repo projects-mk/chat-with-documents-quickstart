@@ -8,6 +8,7 @@ x-common-environment: &common-environment
   POSTGRES_DB: main_app
   QDRANT_HOST: http://vector_db:6333
   LLM_HOST: http://llm:11434
+  MONITORING_SERVER_URL: http://langfuse-server:3000
 
 x-common-networks: &common-networks
   - main_network
@@ -54,19 +55,6 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-
-  # api:
-  #   image: kurdzik/chat-with-documents-api:latest
-  #   ports:
-  #     - "8000:8000"
-  #   environment:
-  #     <<: *common-environment
-
-  #   depends_on:
-  #     - db
-  #     - llm
-  #     - vector_db
-  #   networks: *common-networks
 
   langfuse-server:
     image: ghcr.io/langfuse/langfuse:latest

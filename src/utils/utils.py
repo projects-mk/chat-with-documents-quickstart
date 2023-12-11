@@ -6,6 +6,8 @@ import streamlit as st
 from dotenv import load_dotenv
 from psycopg2.errors import OperationalError
 from sqlalchemy import create_engine
+from langfuse.callback import CallbackHandler
+import pandas as pd
 
 load_dotenv('../.env')
 
@@ -50,4 +52,21 @@ class CheckResources:
             if response.status_code == 200:
                 return 'Running'
         except requests.exceptions.ConnectionError:
+            return 'Unavailable'
+
+    def check_monitoring():
+        engine = create_engine(os.getenv('DATABASE_CONN_STRING'))
+        df = pd.read_sql_table('monitoring', engine)
+        monitoring_dict = df.to_dict(orient='records')[0]
+        print(monitoring_dict)
+        try:
+            handler = CallbackHandler(
+                host=monitoring_dict['LANGFUSE_SERVER_URL'],
+                public_key=monitoring_dict['LANGFUSE_PUBLIC_KEY'],
+                secret_key=monitoring_dict['LANGFUSE_SECRET_KEY'],
+            )
+
+            if handler.auth_check() == True:
+                return 'Running'
+        except Exception as e:
             return 'Unavailable'
