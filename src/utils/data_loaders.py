@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import io
 
 from langchain.document_loaders import PyPDFLoader
@@ -16,10 +14,11 @@ class DocumentLoader:
 
         return pdf_content
 
-    def read_pdf_from_bytes(self, bytes_data):
+    @staticmethod
+    def read_pdf_from_bytes(bytes_data):
         with io.BytesIO(bytes_data) as base64_pdf:
             reader = PdfReader(base64_pdf)
-            doc = self._read_pages(reader)
+            doc = DocumentLoader._read_pages(reader)
 
         return doc
 
@@ -31,17 +30,16 @@ class DocumentLoader:
 
 
 class StylesLoader:
-    def __init__(self, css_file_path: str):
-        self.css_file_path = css_file_path
-
-    def load(self):
-        with open(self.css_file_path, 'r', encoding='utf-8') as f:
+    @staticmethod
+    def load(css_file_path):
+        with open(css_file_path, 'r', encoding='utf-8') as f:
             css = f.read()
         return f'<style>\n\n{css}\n</style>'
 
 
 class HtmlLoader:
-    def load(self, html_file_path):
+    @staticmethod
+    def load(html_file_path):
         with open(html_file_path, 'r', encoding='utf-8') as f:
             html = f.read()
         return html

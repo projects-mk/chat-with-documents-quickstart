@@ -1,7 +1,6 @@
 import os
 from typing import Any
 
-
 import pandas as pd
 import streamlit as st
 from langchain.embeddings import (
@@ -15,8 +14,9 @@ from sqlalchemy import create_engine
 
 from utils.conf_loaders import load_config
 
-embeddings_providers = load_config(custom_key='embeddings').keys()
-embeddings_models = load_config(custom_key='embeddings')
+embeddings_config = load_config(custom_key='embeddings')
+embeddings_providers = embeddings_config.keys()
+embeddings_models = embeddings_config
 
 
 class MakeEmbeddings:
@@ -33,11 +33,10 @@ class MakeEmbeddings:
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000, chunk_overlap=50,
         )
-        docs = [
+        return [
             Document(page_content=x, metadata={'source': x})
             for x in text_splitter.split_text(text)
         ]
-        return docs
 
     def _select_embedding_method(self):
         if self.model is not None:
@@ -49,22 +48,16 @@ class MakeEmbeddings:
 
     @staticmethod
     def _create_engine():
-        engine = create_engine(os.getenv('DATABASE_CONN_STRING'))
-        return engine
+        return create_engine(os.getenv('DATABASE_CONN_STRING'))
 
     def _save_mapping(self):
         engine = self._create_engine()
 
-        df = pd.DataFrame(
-            columns=[
-                'collection', 'embedding_model_provider',
-                'embedding_model_name',
-            ],
-        )
-
-        df['collection'] = [self.collection_name]
-        df['embedding_model_provider'] = [self.provider]
-        df['embedding_model_name'] = [self.model]
+        df = pd.DataFrame({
+            'collection': [self.collection_name],
+            'embedding_model_provider': [self.provider],
+            'embedding_model_name': [self.model],
+        })
 
         df.to_sql(
             'embedding_mappings', engine,

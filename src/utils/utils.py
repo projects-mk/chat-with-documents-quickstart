@@ -27,35 +27,39 @@ def show_pdf_uplaoded(bytes_data):
 class CheckResources:
     @staticmethod
     @st.cache_data
-    def check_qdrant():
+    def check_service(service_url):
         try:
-            response = requests.get(os.getenv('QDRANT_HOST'))
+            response = requests.get(service_url)
             if response.status_code == 200:
                 return 'Running'
         except requests.exceptions.ConnectionError:
             return 'Unavailable'
 
-    def check_db():
+    @staticmethod
+    def check_qdrant():
+        return CheckResources.check_service(os.getenv('QDRANT_HOST'))
+
+    @staticmethod
+    def check_llm():
+        return CheckResources.check_service(os.getenv('LLM_HOST'))
+
+    @staticmethod
+    def create_and_check_db_conn(conn_string):
         try:
-            conn_string = os.getenv('DATABASE_CONN_STRING')
             engine = create_engine(conn_string)
             engine.connect()
             return 'Running'
-
         except OperationalError:
             return 'Unavailable'
 
     @staticmethod
-    def check_llm():
-        try:
-            response = requests.get(os.getenv('LLM_HOST'))
-            if response.status_code == 200:
-                return 'Running'
-        except requests.exceptions.ConnectionError:
-            return 'Unavailable'
+    def check_db():
+        return CheckResources.create_and_check_db_conn(os.getenv('DATABASE_CONN_STRING'))
 
+    @staticmethod
     def check_monitoring():
-        engine = create_engine(os.getenv('DATABASE_CONN_STRING'))
+        conn_string = os.getenv('DATABASE_CONN_STRING')
+        engine = create_engine(conn_string)
         df = pd.read_sql_table('monitoring', engine)
         monitoring_dict = df.to_dict(orient='records')[0]
         print(monitoring_dict)
