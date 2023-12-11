@@ -1,8 +1,13 @@
 version: '3.8'
+
 x-common-environment: &common-environment
+  LLM_CONTAINER_NAME: "gpu-llm-1"
+  DATABASE_CONN_STRING: "postgresql://postgres:postgres@db:5432/main_app"
   POSTGRES_PASSWORD: postgres
   POSTGRES_USER: postgres
   POSTGRES_DB: main_app
+  QDRANT_HOST: http://vector_db:6333
+  LLM_HOST: http://llm:11434
 
 x-common-networks: &common-networks
   - main_network
@@ -17,11 +22,8 @@ services:
       - "80:8501"
     environment:
       <<: *common-environment
-      QDRANT_HOST: http://vector_db:6333
-      LLM_HOST: http://llm:11434
-      DATABASE_CONN_STRING: "postgresql://postgres:postgres@db:5432/main_app"
       K8S_DEPLOYMENT: "False"
-      LLM_CONTAINER_NAME: "gpu-llm-1"
+
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
@@ -52,6 +54,36 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+
+  # api:
+  #   image: kurdzik/chat-with-documents-api:latest
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     <<: *common-environment
+
+  #   depends_on:
+  #     - db
+  #     - llm
+  #     - vector_db
+  #   networks: *common-networks
+
+  langfuse-server:
+    image: ghcr.io/langfuse/langfuse:latest
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/main_app
+      NEXTAUTH_SECRET: mysecret
+      SALT: mysalt
+      NEXTAUTH_URL: http://localhost:3000
+      TELEMETRY_ENABLED: ${TELEMETRY_ENABLED:-true}
+      NEXT_PUBLIC_SIGN_UP_DISABLED: ${NEXT_PUBLIC_SIGN_UP_DISABLED:-false}
+      LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES: ${LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES:-false}
+    networks: *common-networks
 
 networks:
   main_network:

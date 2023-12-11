@@ -13,6 +13,10 @@ from utils.conf_loaders import load_config
 from utils.data_loaders import DocumentLoader, StylesLoader
 from utils.preprocessing import MakeEmbeddings
 from utils.utils import CheckResources
+from selenium import webdriver, FirefoxOptions
+options = FirefoxOptions()
+options.headless = True
+driver = webdriver.Firefox(options=options)
 
 app_config = load_config()
 app_info_texts = app_config['info_texts']
@@ -77,7 +81,7 @@ if __name__ == '__main__':
 
                     st.link_button(
                         'Manage yours collections',
-                        os.getenv('QDRANT_HOST') + '/dashboard#/collections/',
+                        driver.current_url + '/dashboard#/collections/',
                     )
 
                 st.subheader('Get answers from uploaded documents')

@@ -48,4 +48,4 @@ if __name__ == '__main__':
         os.environ[i] = avaiable_resources[i][0]
 
     st.markdown('<br>', unsafe_allow_html=True)
-    st.button('Create API Key for Vector Database')
+    # st.button('Create API Key for Vector Database')
