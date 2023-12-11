@@ -1,5 +1,4 @@
 import os
-
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
@@ -13,6 +12,11 @@ import docker
 load_dotenv('../.env')
 engine = create_engine(os.getenv('DATABASE_CONN_STRING'))
 
+
+def generate_text_input(col, label, env_var, password=False):
+    return col.text_input(label=label, value=os.getenv(env_var), type='password' if password else 'default')
+
+
 if __name__ == '__main__':
     st.set_page_config(
         page_title='DocSearch.ai',
@@ -25,26 +29,17 @@ if __name__ == '__main__':
     CSS = StylesLoader(css_file_path=css_file_path).load()
     st.markdown(CSS, unsafe_allow_html=True)
 
-    avaiable_resources = pd.DataFrame()
+    avaiable_resources = {
+        'Vector Database': CheckResources.check_qdrant(),
+        'App Database': CheckResources.check_db(),
+        'Self-hosted LLM': CheckResources.check_llm(),
+        'LLM Monitoring': CheckResources.check_monitoring(),
+    }
 
-    avaiable_resources['Vector Database'] = [
-        CheckResources.check_qdrant(),
-    ]
-
-    avaiable_resources['App Database'] = [
-        CheckResources.check_db(),
-    ]
-
-    avaiable_resources['Self-hosted LLM'] = [
-        CheckResources.check_llm(),
-    ]
-
-    avaiable_resources['LLM Monitoring'] = [
-        CheckResources.check_monitoring(),
-    ]
+    avaiable_resources_df = pd.DataFrame(avaiable_resources, index=[0])
 
     st.dataframe(
-        avaiable_resources.T.reset_index().rename(
+        avaiable_resources_df.T.reset_index().rename(
             {0: 'Status', 'index': 'Resource'}, axis=1,
         ),
         use_container_width=True,
@@ -52,7 +47,7 @@ if __name__ == '__main__':
     )
 
     for i in avaiable_resources:
-        os.environ[i] = avaiable_resources[i][0]
+        os.environ[i] = avaiable_resources[i]
 
     st.divider()
 
@@ -60,25 +55,21 @@ if __name__ == '__main__':
         with st.form(key='prompt_monitoring') as form:
             col1, col2, col3, col4 = st.columns(4)
             connection_dict = {}
-            with col1:
-                connection_dict['LANGFUSE_SERVER_URL'] = st.text_input(
-                    label='Langfuse URL', value=os.getenv('MONITORING_SERVER_URL'),
-                )
-            with col2:
-                connection_dict['LANGFUSE_SECRET_KEY'] = st.text_input(
-                    label='Langfuse Secret Key', value='', type='password',
-                )  # sk-lf-764ee597-ef55-41d4-9ec5-50191c52eb25
-            with col3:
-                connection_dict['LANGFUSE_PUBLIC_KEY'] = st.text_input(
-                    label='Langfuse Public Key', value='', type='password',
-                )  # pk-lf-e9fd97c0-1fbb-45ce-b8af-b142ed5bc848
+            connection_dict['LANGFUSE_SERVER_URL'] = generate_text_input(
+                col1, 'Langfuse URL', 'MONITORING_SERVER_URL',
+            )
+            connection_dict['LANGFUSE_SECRET_KEY'] = generate_text_input(
+                col2, 'Langfuse Secret Key', '', password=True,
+            )
+            connection_dict['LANGFUSE_PUBLIC_KEY'] = generate_text_input(
+                col3, 'Langfuse Public Key', '', password=True,
+            )
 
             with col4:
-                st.markdown('<br>', unsafe_allow_html=True)
+                st.write('')
                 submit = st.form_submit_button('Connect')
 
             if submit:
-
                 try:
                     handler = CallbackHandler(
                         host=connection_dict['LANGFUSE_SERVER_URL'],

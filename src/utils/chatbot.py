@@ -35,39 +35,43 @@ class ChatBot:
         self.selected_model = selected_model
         self.embedding_model_provider = embedding_model_provider
         self.embedding_model = embedding_model
+        self.openai_api_key = os.getenv('OPENAI_APIKEY')
+        self.llm_host = os.getenv('LLM_HOST')
+        self.qdrant_host = os.getenv('QDRANT_HOST')
+        self.database_conn_string = os.getenv('DATABASE_CONN_STRING')
 
     def _select_embedding_method(self, provider, model):
-        if model is not None:
-            if provider == 'HuggingFace':
-                return HuggingFaceEmbeddings(model_name=model)
+        provider_classes = {
+            'HuggingFace': HuggingFaceEmbeddings,
+            'OpenAI': OpenAIEmbeddings,
+        }
+        if model is not None and provider in provider_classes:
+            if provider == 'OpenAI':
+                return provider_classes[provider](openai_api_key=self.openai_api_key, model=model)
+            return provider_classes[provider](model_name=model)
 
-            elif provider == 'OpenAI':
-                return OpenAIEmbeddings(openai_api_key=os.getenv('OPENAI_APIKEY'), model=model)
-
-    @staticmethod
     def _select_model_params(self):
         self.model_temperature = st.slider('Temperature', 0.0, 1.0, 0.01)
 
     def _setup_llm(self):
-        if self.selected_model_provider == 'HuggingFace':
-
-            llm = Ollama(
+        provider_classes = {
+            'HuggingFace': Ollama,
+            'OpenAI': ChatOpenAI,
+        }
+        if self.selected_model_provider in provider_classes:
+            if self.selected_model_provider == 'OpenAI':
+                return provider_classes[self.selected_model_provider](
+                    model=self.selected_model, temperature=0.5,
+                    openai_api_key=self.openai_api_key,
+                    verbose=True,
+                )
+            return provider_classes[self.selected_model_provider](
                 model=self.selected_model,
-                base_url=os.getenv('LLM_HOST'),
+                base_url=self.llm_host,
             )
-
-            return llm
-
-        elif self.selected_model_provider == 'OpenAI':
-            llm = ChatOpenAI(
-                model=self.selected_model, temperature=0.5,
-                openai_api_key=os.getenv('OPENAI_APIKEY'),
-                verbose=True,
-            )
-            return llm
 
     def _connect_vector_db(self, embeddings):
-        vectordb = QdrantClient(url=os.getenv('QDRANT_HOST'))
+        vectordb = QdrantClient(url=self.qdrant_host)
         vectordb = Qdrant(
             client=self.vector_db_client,
             collection_name=self.selected_collection,

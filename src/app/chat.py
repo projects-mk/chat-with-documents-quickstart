@@ -14,13 +14,14 @@ from utils.data_loaders import DocumentLoader, StylesLoader
 from utils.preprocessing import MakeEmbeddings
 from utils.utils import CheckResources
 
+load_dotenv('../.env')
+engine = create_engine(os.getenv('DATABASE_CONN_STRING'))
+
 app_config = load_config()
 app_info_texts = app_config['info_texts']
-
 models = load_config(custom_key='models')
 embeddings_methods = load_config(custom_key='embeddings')
-engine = create_engine(os.getenv('DATABASE_CONN_STRING'))
-load_dotenv('../.env')
+qdrant_host = os.getenv('QDRANT_HOST')
 
 
 def get_datastore_status():
@@ -28,6 +29,10 @@ def get_datastore_status():
     if status:
         return status
     return CheckResources.check_qdrant()
+
+
+def generate_selectbox(col, label, options):
+    return col.selectbox(label=label, options=options)
 
 
 if __name__ == '__main__':
@@ -53,7 +58,7 @@ if __name__ == '__main__':
         if option_selected == 'Existing Documents':
 
             try:
-                client = QdrantClient(url=os.getenv('QDRANT_HOST'))
+                client = QdrantClient(url=qdrant_host)
                 collections_dict = {
                     index: collection.name
                     for index, collection in enumerate(
@@ -64,24 +69,23 @@ if __name__ == '__main__':
                 st.subheader('Get answers from uploaded documents')
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    selected_collection = st.selectbox(
-                        label='Collection', options=collections_dict.values(),
+                    selected_collection = generate_selectbox(
+                        col1, 'Collection', collections_dict.values(),
                     )
                 with col2:
-                    model_provider = st.selectbox(
-                        label='Model provider', options=models.keys(),
+                    model_provider = generate_selectbox(
+                        col2, 'Model provider', models.keys(),
                     )
                 with col3:
                     if model_provider == 'HuggingFace':
                         llms = pd.read_sql_table('llm_models', engine)
                         downloaded_llms = llms['model_name'].unique().tolist()
-                        model = st.selectbox(
-                            label='Model', options=downloaded_llms,
+                        model = generate_selectbox(
+                            col3, 'Model', downloaded_llms,
                         )
-
                     else:
-                        model = st.selectbox(
-                            label='Model', options=models[model_provider],
+                        model = generate_selectbox(
+                            col3, 'Model', models[model_provider],
                         )
 
                 df = pd.read_sql_table('embedding_mappings', engine)
