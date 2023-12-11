@@ -13,7 +13,8 @@ from utils.conf_loaders import load_config
 from utils.data_loaders import DocumentLoader, StylesLoader
 from utils.preprocessing import MakeEmbeddings
 from utils.utils import CheckResources
-from selenium import webdriver, FirefoxOptions
+from selenium import webdriver
+from selenium.webdriver import FirefoxOptions
 options = FirefoxOptions()
 options.headless = True
 driver = webdriver.Firefox(options=options)
