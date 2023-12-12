@@ -104,7 +104,7 @@ class CheckResources:
         return CheckResources.create_and_check_db_conn(os.getenv('DATABASE_CONN_STRING'))
 
     @staticmethod
-    def check_monitoring():
+    def check_monitoring(return_handler=False):
         """
         Checks the status of the monitoring service.
 
@@ -122,8 +122,11 @@ class CheckResources:
                 public_key=monitoring_dict['LANGFUSE_PUBLIC_KEY'],
                 secret_key=monitoring_dict['LANGFUSE_SECRET_KEY'],
             )
-
-            if handler.auth_check() == True:
+            if not return_handler and handler.auth_check():
                 return 'Running'
+
+            elif return_handler and handler.auth_check():
+                return handler
+
         except Exception as e:
             return 'Unavailable'
