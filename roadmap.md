@@ -19,7 +19,7 @@
     - [ ] update information that is stored in sources (currently is only text chunk)
     - [x] add option to create new chat
     - [ ] add option to delete selected chat
-    - [ ] combine chat name with tracing api key
+    - [x] enable prompt monitoring
 
 ### Vector Store
     - [x] Setup

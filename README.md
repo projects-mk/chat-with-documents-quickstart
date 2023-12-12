@@ -1,33 +1,35 @@
 ### Deployment options
-- **Docker** :
-    - Go to docker dir and them to cpu-only or gpu and run `docker compose up -d`
-- **Kubernetes**:
-    - Not yet supported
+<details>
+<summary>Docker</summary>
+- Go to docker dir and then to cpu-only or gpu and run `docker compose up -d`
+</details>
 
-Just remember to add necessary api keys for example if you want to use OpenAI models, provide OPENAI api key in docker-compose file
-<hr>
-
-### Usage
-
-1. Check if everthing is connected correctly in **`Resources`** tab
-    ![image](imgs/resources.png)
+<details>
+<summary>Kubernetes</summary>
+- Not yet supported
+</details>
 
 <br>
+Just remember to add necessary api keys for example if you want to use OpenAI models, provide OPENAI api key in docker-compose file
+
+<br>
+
+<details>
+<summary>Usage</summary>
+
+1. Check if everything is connected correctly in **`Resources`** tab
+    ![image](imgs/resources.png)
 
 2. Upload PDF document
     ![image](imgs/upload_and_embed.png)
 
-<br>
-
 3. Create new chat
     ![image](imgs/start_chat.png)
-
-<br>
 
 4. Start Chatting, in this case using smallest possible llm (zephyr3b)
     ![image](imgs/example_query.png)
 
-<br>
+</details>
 
 ### More advanced configuration
 
@@ -36,17 +38,37 @@ Local LLM models inference is done using [Ollama]('https://ollama.ai/'). So any 
 <br>
 
 #### Adding additional LLMs
-In oder to add additional models there are some extra steps that need to be taken:
 
-1. Update list of models in **src/app.conf** use the same model name that is written on Ollama page
-2. In docker-compose.yaml uncomment section **build:** and comment section **image:**
-3. Rebuild an image using `docker compose up`
+<details>
+<summary>Downloading Open Source models is done in a Resources Tab</summary>
+
+![image](imgs/resources-models.png)
+</details>
 
 <br>
 
-#### Connecting app to external services
+#### Enabling prompt monitoring
 
-Services like
-- Database (for now only Postgres is supported) - pass connection string as a DATABASE_CONN_STRING env variable
-- Vectorstore (for now only Qdrant is supported) - pass database URL as QDRANT_HOST env variable
-- Externally deployed LLM via Ollama - pass url as LLM_HOST env variable
+<details>
+<summary>Connecting monitoring service (Langfuse server) is done in Resources Tab</summary>
+
+![image](imgs/resources-monitoring.png)
+</details>
+By default Langfuse URL will point to url defined as a MONITORING_SERVER_URL, so if you are deploying this app with docker compose, there is no need to change anything here.
+
+You can of cource provide URL pointing to Langfuse cloud as well.
+
+<details>
+<summary>Setting up monitoring server</summary>
+
+1. Go to app_url:3000 and create account
+    ![image](imgs/lf-signup.png)
+
+2. Log in and create new project
+    ![image](imgs/lf-new-project.png)
+
+3. Create a pair of API keys
+    ![image](imgs/lf-api-keys.png)
+
+4. Pass those keys into corresponding places in Resources Tab
+</details>
