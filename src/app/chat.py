@@ -13,6 +13,7 @@ from utils.conf_loaders import load_config
 from utils.data_loaders import DocumentLoader, StylesLoader
 from utils.preprocessing import MakeEmbeddings
 from utils.utils import CheckResources
+from streamlit_extras.stateful_button import button
 
 load_dotenv('../.env')
 engine = create_engine(os.getenv('DATABASE_CONN_STRING'))
@@ -44,7 +45,7 @@ if __name__ == '__main__':
     )
 
     css_file_path = 'templates/styles/styles.css'
-    CSS = StylesLoader(css_file_path=css_file_path).load()
+    CSS = StylesLoader().load(css_file_path=css_file_path)
     st.markdown(CSS, unsafe_allow_html=True)
 
     if get_datastore_status() == 'Running':
@@ -77,15 +78,23 @@ if __name__ == '__main__':
                         col2, 'Model provider', models.keys(),
                     )
                 with col3:
-                    if model_provider == 'HuggingFace':
-                        llms = pd.read_sql_table('llm_models', engine)
-                        downloaded_llms = llms['model_name'].unique().tolist()
-                        model = generate_selectbox(
-                            col3, 'Model', downloaded_llms,
-                        )
-                    else:
-                        model = generate_selectbox(
-                            col3, 'Model', models[model_provider],
+                    try:
+                        if model_provider == 'HuggingFace':
+                            llms = pd.read_sql_table('llm_models', engine)
+                            downloaded_llms = llms['model_name'].unique(
+                            ).tolist()
+                            model = generate_selectbox(
+                                col3, 'Model', downloaded_llms,
+                            )
+
+                        elif model_provider != 'HuggingFace':
+                            model = generate_selectbox(
+                                col3, 'Model', models[model_provider],
+                            )
+                    except Exception:
+                        st.markdown('<br>', unsafe_allow_html=True)
+                        st.warning(
+                            'Download models first. Go to Resources tab',
                         )
 
                 df = pd.read_sql_table('embedding_mappings', engine)
@@ -107,14 +116,17 @@ if __name__ == '__main__':
                     embedding_model=embedding_model,
                 )
 
-                try:
-                    bot.start_chatting()
-                except ValueError:
-                    # Not all values are selected - do nothing
-                    pass
-
+                bot.start_chatting()
             except (KeyError, ValueError):
-                st.write(app_info_texts['no_collections_found'])
+                st.info(app_info_texts['no_collections_found'])
+
+            except NameError:
+                # No models defined - do nothing
+                pass
+
+            except Exception:
+                # No new chat initialized
+                st.info('You need to initialize a new chat first')
 
         elif option_selected == 'Upload New Documents':
             docs = st.file_uploader(

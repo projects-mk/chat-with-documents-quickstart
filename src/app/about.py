@@ -11,7 +11,7 @@ if __name__ == '__main__':
     )
 
     css_file_path = 'templates/styles/styles.css'
-    CSS = StylesLoader(css_file_path=css_file_path).load()
+    CSS = StylesLoader().load(css_file_path=css_file_path)
     st.markdown(CSS, unsafe_allow_html=True)
 
     html_path = 'templates/static/landing.html'

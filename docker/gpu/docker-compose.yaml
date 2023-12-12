@@ -1,60 +1,58 @@
-version: '3.8'
-
-x-common-environment: &common-environment
-  LLM_CONTAINER_NAME: "gpu-llm-1"
-  DATABASE_CONN_STRING: "postgresql://postgres:postgres@db:5432/main_app"
-  POSTGRES_PASSWORD: postgres
-  POSTGRES_USER: postgres
-  POSTGRES_DB: main_app
-  QDRANT_HOST: http://vector_db:6333
-  LLM_HOST: http://llm:11434
-  MONITORING_SERVER_URL: http://langfuse-server:3000
-
-x-common-networks: &common-networks
-  - main_network
+version: '3.3'
 
 services:
   main_app:
-    # build:
-    #   context: ../..
-    #   dockerfile: build/Dockerfile.main
     image: kurdzik/chat-with-documents:latest
     ports:
       - "80:8501"
     environment:
-      <<: *common-environment
+      LLM_CONTAINER_NAME: "gpu-llm-1"
+      DATABASE_CONN_STRING: "postgresql://postgres:postgres@db:5432/main_app"
+      QDRANT_HOST: http://vector_db:6333
+      LLM_HOST: http://llm:11434
+      MONITORING_SERVER_URL: http://langfuse-server:3000
       K8S_DEPLOYMENT: "False"
-
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - vector_db
       - db
       - llm
-    networks: *common-networks
+    networks:
+      - main_network
 
   vector_db:
     image: qdrant/qdrant:latest
     ports:
       - "6330:6333"
-    networks: *common-networks
+    networks:
+      - main_network
 
   db:
     image: postgres:latest
     restart: always
-    environment: *common-environment
-    networks: *common-networks
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: main_app
+    networks:
+      - main_network
 
   llm:
     image: ollama/ollama:latest
-    networks: *common-networks
+    networks:
+      - main_network
+    ports:
+      - "11434:11434"
     deploy:
       resources:
         reservations:
           devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
 
   langfuse-server:
     image: ghcr.io/langfuse/langfuse:latest
@@ -71,7 +69,8 @@ services:
       TELEMETRY_ENABLED: ${TELEMETRY_ENABLED:-true}
       NEXT_PUBLIC_SIGN_UP_DISABLED: ${NEXT_PUBLIC_SIGN_UP_DISABLED:-false}
       LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES: ${LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES:-false}
-    networks: *common-networks
+    networks:
+      - main_network
 
 networks:
   main_network:

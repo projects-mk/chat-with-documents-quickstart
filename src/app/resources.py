@@ -26,7 +26,7 @@ if __name__ == '__main__':
     )
 
     css_file_path = 'templates/styles/styles.css'
-    CSS = StylesLoader(css_file_path=css_file_path).load()
+    CSS = StylesLoader().load(css_file_path=css_file_path)
     st.markdown(CSS, unsafe_allow_html=True)
 
     avaiable_resources = {
@@ -66,7 +66,7 @@ if __name__ == '__main__':
             )
 
             with col4:
-                st.write('')
+                st.markdown('<br>', unsafe_allow_html=True)
                 submit = st.form_submit_button('Connect')
 
             if submit:
@@ -91,11 +91,13 @@ if __name__ == '__main__':
 
     st.divider()
     st.subheader('Currently downloaded models')
-
-    st.dataframe(
-        pd.read_sql_table('llm_models', engine).drop_duplicates(
-        ), use_container_width=True, hide_index=True,
-    )
+    try:
+        st.dataframe(
+            pd.read_sql_table('llm_models', engine).drop_duplicates(
+            ), use_container_width=True, hide_index=True,
+        )
+    except ValueError:
+        st.write('No models downloaded yet')
 
     st.markdown('<br>', unsafe_allow_html=True)
     with st.expander('Download Huggingface LLMs'):
