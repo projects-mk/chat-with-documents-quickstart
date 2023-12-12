@@ -6,7 +6,7 @@ services:
     ports:
       - "80:8501"
     environment:
-      LLM_CONTAINER_NAME: "gpu-llm-1"
+      LLM_CONTAINER_NAME: "cpu-only-llm-1"
       DATABASE_CONN_STRING: "postgresql://postgres:postgres@db:5432/main_app"
       QDRANT_HOST: http://vector_db:6333
       LLM_HOST: http://llm:11434
