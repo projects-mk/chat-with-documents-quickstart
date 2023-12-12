@@ -1,6 +1,7 @@
 import os
 
 import docker
+from utils.utils import CheckResources
 import pandas as pd
 import streamlit as st
 from langchain.chains.qa_with_sources.retrieval import \
@@ -16,7 +17,6 @@ from langchain.vectorstores import Qdrant
 from qdrant_client import QdrantClient
 from sqlalchemy import create_engine
 from langfuse.callback import CallbackHandler
-from streamlit_extras.stateful_button import button
 
 
 class ChatBot:
@@ -40,6 +40,14 @@ class ChatBot:
         self.llm_host = os.getenv('LLM_HOST')
         self.qdrant_host = os.getenv('QDRANT_HOST')
         self.database_conn_string = os.getenv('DATABASE_CONN_STRING')
+
+    def monitor_prompt(self, qa_chain, prompt):
+
+        handler = CheckResources.check_monitoring(return_handler=True)
+        if handler is not 'Unavailable':
+            return qa_chain(prompt, callbacks=[handler])
+        else:
+            return qa_chain(prompt)
 
     def _select_embedding_method(self, provider, model):
         provider_classes = {
@@ -94,6 +102,7 @@ class ChatBot:
                 search_type='similarity',
             ),
             verbose=True,
+
         )
 
         return qa_chain
@@ -125,36 +134,6 @@ class ChatBot:
                 )
                 st.toast('Chat Created Successfully!')
                 st.rerun()
-
-    @staticmethod
-    def _create_initial_chat_window():
-        connection_string = os.getenv('DATABASE_CONN_STRING')
-        engine = create_engine(connection_string)
-
-        with st.expander('Create New Chat'):
-            form = st.form(key='initial_chat_creation')
-
-            session_id = form.text_input(
-                label='New Chat', label_visibility='hidden', value='New Chat',
-            )
-            create = form.form_submit_button(
-                'Create', use_container_width=True,
-            )
-
-            if create:
-                df = pd.DataFrame()
-                df['chat_name'] = [session_id]
-                df['creation_date'] = [
-                    pd.Timestamp.now().strftime('%Y-%m-%d %H:%M'),
-                ]
-                df.to_sql(
-                    'chat_sessions', engine,
-                    if_exists='append', index=False,
-                )
-                st.toast('Chat Created Successfully!')
-                st.rerun()
-
-        return True
 
     def _get_chat_session_id(self):
         with st.sidebar:
@@ -222,7 +201,8 @@ class ChatBot:
                 # If user provides input, run the QA chain
                 try:
                     if self.mapping[[msg.type for msg in history.messages][-1]] == 'user':
-                        response = qa_chain(prompt)
+
+                        response = self.monitor_prompt(qa_chain, prompt)
                         answer = response['answer']
                         sources = response['sources']
 
