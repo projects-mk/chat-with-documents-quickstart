@@ -49,14 +49,14 @@ if __name__ == '__main__':
 
     for i in avaiable_resources:
         os.environ[i] = avaiable_resources[i]
-    
+
     st.divider()
     st.markdown('<br>', unsafe_allow_html=True)
     st.subheader('OpenAI API Key')
     with st.form(key='openai_api_key'):
         openai_api_key = st.text_input(
             label='OpenAI API Key', value=os.getenv('OPENAI_APIKEY'), type='password',
-            
+
         )
         st.warning('Please note that this key is not saved anywhere, it is only used and avaiable for current web session on your browser.')
         submit = st.form_submit_button('Submit')
@@ -153,4 +153,3 @@ if __name__ == '__main__':
                 st.rerun()
             except Exception as e:
                 st.error('Model could not be downloaded')
-

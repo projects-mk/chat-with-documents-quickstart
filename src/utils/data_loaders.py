@@ -9,16 +9,16 @@ class DocumentLoader:
     This class provides methods to load documents from PDF files.
     """
     def __init__(self,file_name) -> None:
-        self.file_name = file_name 
-    
-    
+        self.file_name = file_name
+
+
     def _read_pages(self,pdf_reader):
         """
         Reads the text from all pages of a PDF file.
         """
-        
+
         pdf_title = self.file_name
-        
+
         doc_data_list = []
 
         for page in pdf_reader.pages:

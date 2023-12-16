@@ -88,7 +88,7 @@ class ChatBot:
                     openai_api_key=self.openai_api_key,
                     verbose=True,
                 )
-            
+
             return provider_classes[self.selected_model_provider](
                 model=self.selected_model,
                 base_url=self.llm_host,
@@ -104,7 +104,7 @@ class ChatBot:
             embeddings=embeddings,
         )
 
-        
+
         return vectordb
 
     @staticmethod
@@ -115,14 +115,14 @@ class ChatBot:
                 st.rerun()
 
     def _configure_qa_chain(self, llm, vector_db, embeddings):
-        
+
         doc_compressor = EmbeddingsFilter(embeddings=embeddings)
         # doc_compressor = LLMChainExtractor.from_llm(llm)
 
         retriever = ContextualCompressionRetriever(base_compressor=doc_compressor,
                                                    base_retriever=vector_db.as_retriever(),
                                                    search_kwargs={"k": self.n_retrieved_docs}
-                                                   
+
                                                    )
 
         qa_chain = RetrievalQAWithSourcesChain.from_chain_type(

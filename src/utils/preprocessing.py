@@ -43,7 +43,7 @@ class MakeEmbeddings:
         """
         Splits the text into chunks.
         """
-        text_splitter = SpacyTextSplitter(separator=".",pipeline="sentencizer") 
+        text_splitter = SpacyTextSplitter(separator=".",pipeline="sentencizer")
         # RecursiveCharacterTextSplitter(
         #     chunk_size=1000, chunk_overlap=50,
         # )
