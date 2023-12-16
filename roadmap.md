@@ -16,7 +16,7 @@
     - [x] enable conversations history
     - [x] enable option to swich between conversations
     - [x] add sources retrieval
-    - [ ] update information that is stored in sources (currently is only text chunk)
+    - [x] update information that is stored in sources
     - [x] add option to create new chat
     - [ ] add option to delete selected chat
     - [x] enable prompt monitoring

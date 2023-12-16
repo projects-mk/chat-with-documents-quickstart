@@ -6,7 +6,7 @@
 
 <details>
 <summary>Kubernetes</summary>
-- Not yet supported
+- Not yet supported (under construction)
 </details>
 
 <br>
@@ -62,13 +62,13 @@ You can of cource provide URL pointing to Langfuse cloud as well.
 <summary>Setting up monitoring server</summary>
 
 1. Go to app_url:3000 and create account
-    ![image](imgs/lf-signup.png)
+    ![image](imgs/lf-signup.PNG)
 
 2. Log in and create new project
-    ![image](imgs/lf-new-project.png)
+    ![image](imgs/lf-new-project.PNG)
 
 3. Create a pair of API keys
-    ![image](imgs/lf-api-keys.png)
+    ![image](imgs/lf-api-keys.PNG)
 
 4. Pass those keys into corresponding places in Resources Tab
 </details>
