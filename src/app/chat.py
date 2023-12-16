@@ -13,7 +13,7 @@ from utils.conf_loaders import load_config
 from utils.data_loaders import DocumentLoader, StylesLoader
 from utils.preprocessing import MakeEmbeddings
 from utils.utils import CheckResources
-from streamlit_extras.stateful_button import button
+
 
 load_dotenv('../.env')
 engine = create_engine(os.getenv('DATABASE_CONN_STRING'))
@@ -105,8 +105,6 @@ if __name__ == '__main__':
                 embedding_model_provider = mapping['embedding_model_provider']
                 embedding_model = mapping['embedding_model_name']
 
-                st.divider()
-
                 bot = ChatBot(
                     selected_collection=selected_collection,
                     selected_model_provider=model_provider,
@@ -129,24 +127,30 @@ if __name__ == '__main__':
                 st.info('You need to initialize a new chat first')
 
         elif option_selected == 'Upload New Documents':
-            docs = st.file_uploader(
+            uploaded_file = st.file_uploader(
                 label='upload_new_docs',
                 type=['pdf'],
                 accept_multiple_files=False,
                 label_visibility='hidden',
             )
-            if docs:
+
+            if uploaded_file:
                 collection_name = st.text_input(
                     label='Collection Name',
                     value='',
                     help=app_info_texts['collections'],
                 )
 
-                bytes_data = docs.getvalue()
+                uploaded_file_name = st.text_input(
+                    label='Document Name',
+                    value=uploaded_file.name,
+                )
 
-                text = DocumentLoader().read_pdf_from_bytes(bytes_data)
+                bytes_data = uploaded_file.getvalue()
 
-                make_embeddings = MakeEmbeddings(text, collection_name)
+                doc_data = DocumentLoader(uploaded_file_name).read_pdf_from_bytes(bytes_data)
+
+                make_embeddings = MakeEmbeddings(doc_data, collection_name)
 
                 make_embeddings()
 
