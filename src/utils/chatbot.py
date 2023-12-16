@@ -1,22 +1,25 @@
 import os
 
-import docker
 from utils.utils import CheckResources
 import pandas as pd
 import streamlit as st
 from langchain.chains.qa_with_sources.retrieval import \
     RetrievalQAWithSourcesChain
+
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import (
     HuggingFaceEmbeddings, OllamaEmbeddings,
     OpenAIEmbeddings,
 )
+from langchain.retrievers import ContextualCompressionRetriever
+from langchain.retrievers.document_compressors import EmbeddingsFilter,LLMChainExtractor
+
 from langchain.llms import Ollama
 from langchain.memory import PostgresChatMessageHistory
 from langchain.vectorstores import Qdrant
 from qdrant_client import QdrantClient
 from sqlalchemy import create_engine
-from langfuse.callback import CallbackHandler
+
 
 
 class ChatBot:
@@ -60,7 +63,18 @@ class ChatBot:
             return provider_classes[provider](model_name=model)
 
     def _select_model_params(self):
-        self.model_temperature = st.slider('Temperature', 0.0, 1.0, 0.01)
+        with st.expander('Model Parameters'):
+            col111,col222,col333 = st.columns(3)
+
+            with col111:
+                self.model_temperature = st.slider('Temperature', min_value=0.0, max_value=1.0, value=0.7)
+            with col222:
+                self.n_retrieved_docs = st.slider('Number of retrieved documents', min_value=1, max_value=50,value=20)
+            with col333:
+                self.reranker = st.checkbox('Reranker', value=False)
+
+        st.divider()
+        st.markdown('<br>', unsafe_allow_html=True)
 
     def _setup_llm(self):
         provider_classes = {
@@ -70,13 +84,16 @@ class ChatBot:
         if self.selected_model_provider in provider_classes:
             if self.selected_model_provider == 'OpenAI':
                 return provider_classes[self.selected_model_provider](
-                    model=self.selected_model, temperature=0.5,
+                    model=self.selected_model, temperature=self.model_temperature,
                     openai_api_key=self.openai_api_key,
                     verbose=True,
                 )
+
             return provider_classes[self.selected_model_provider](
                 model=self.selected_model,
                 base_url=self.llm_host,
+                temperature=self.model_temperature,
+
             )
 
     def _connect_vector_db(self, embeddings):
@@ -86,6 +103,8 @@ class ChatBot:
             collection_name=self.selected_collection,
             embeddings=embeddings,
         )
+
+
         return vectordb
 
     @staticmethod
@@ -95,12 +114,20 @@ class ChatBot:
                 chat_history.clear()
                 st.rerun()
 
-    def _configure_qa_chain(self, llm, vector_db):
+    def _configure_qa_chain(self, llm, vector_db, embeddings):
+
+        doc_compressor = EmbeddingsFilter(embeddings=embeddings)
+        # doc_compressor = LLMChainExtractor.from_llm(llm)
+
+        retriever = ContextualCompressionRetriever(base_compressor=doc_compressor,
+                                                   base_retriever=vector_db.as_retriever(),
+                                                   search_kwargs={"k": self.n_retrieved_docs}
+
+                                                   )
+
         qa_chain = RetrievalQAWithSourcesChain.from_chain_type(
             llm=llm,
-            retriever=vector_db.as_retriever(
-                search_type='similarity',
-            ),
+            retriever=retriever,
             verbose=True,
 
         )
@@ -156,6 +183,7 @@ class ChatBot:
             st.write(sources)
 
     def start_chatting(self):
+        self._select_model_params()
 
         embeddings = self._select_embedding_method(
             self.embedding_model_provider, self.embedding_model,
@@ -174,6 +202,7 @@ class ChatBot:
             qa_chain = self._configure_qa_chain(
                 llm=llm,
                 vector_db=semantic_search,
+                embeddings=embeddings
             )
 
         current_chat = self._get_chat_session_id()

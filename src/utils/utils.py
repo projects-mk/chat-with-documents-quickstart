@@ -37,7 +37,6 @@ class CheckResources:
     """
 
     @staticmethod
-    @st.cache_data
     def check_service(service_url):
         """
         Checks the status of a service at the given URL.

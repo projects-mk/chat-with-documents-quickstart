@@ -51,7 +51,24 @@ if __name__ == '__main__':
         os.environ[i] = avaiable_resources[i]
 
     st.divider()
+    st.markdown('<br>', unsafe_allow_html=True)
+    st.subheader('OpenAI API Key')
+    with st.form(key='openai_api_key'):
+        openai_api_key = st.text_input(
+            label='OpenAI API Key', value=os.getenv('OPENAI_APIKEY'), type='password',
 
+        )
+        st.warning('Please note that this key is not saved anywhere, it is only used and avaiable for current web session on your browser.')
+        submit = st.form_submit_button('Submit')
+
+        if submit:
+            os.environ['OPENAI_APIKEY'] = openai_api_key
+            st.success('OpenAI API Key set successfully,')
+            time.sleep(1)
+            st.rerun()
+
+
+    st.divider()
     st.subheader('Enable prompt monitoring')
     with st.form(key='prompt_monitoring') as form:
         col1, col2, col3, col4 = st.columns(4)
@@ -87,8 +104,6 @@ if __name__ == '__main__':
                     st.rerun()
             except Exception as e:
                 st.error('Connection could not be enstablished')
-
-    st.markdown('<br>', unsafe_allow_html=True)
 
     st.divider()
     st.subheader('Currently downloaded HuggingFace models')
