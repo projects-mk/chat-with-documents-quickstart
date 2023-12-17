@@ -1,47 +1,275 @@
-
-section.main > div {max-width:100rem}
-.stProgress > div > div > div > div {
-background-color: red;
+body,
+body > div:first-child,
+div#__next,
+div#__next > div,
+html {
+  height: 100%;
 }
 
-[data-testid="stToolbar"] {visibility: hidden !important;}
-footer {visibility: hidden !important;}
+section.main > div {
+  max-width: 100rem;
+}
+.stProgress > div > div > div > div {
+  background-color: red;
+}
+
+[data-testid="stToolbar"] {
+  visibility: hidden !important;
+}
+footer {
+  visibility: hidden !important;
+}
 
 button[data-baseweb="tab"] {
-font-size: 24px;
-margin: 0;
-width: 100%;
+  font-size: 24px;
+  margin: 0;
+  width: 100%;
 }
 
 button[data-baseweb="tab"] > div[data-testid="stMarkdownContainer"] > p {
-font-size: 24px;
+  font-size: 24px;
 }
 
 .dataframe {
-border: 1px solid #ccc;
-border-collapse: collapse;
-width: 100%;
+  border: 1px solid #ccc;
+  border-collapse: collapse;
+  width: 100%;
 }
 
-.dataframe th, .dataframe td {
-padding: 0.5em;
+.dataframe th,
+.dataframe td {
+  padding: 0.5em;
 }
 
 .dataframe th {
-background-color: #eee;
-font-weight: bold;
+  background-color: #eee;
+  font-weight: bold;
 }
 
 .dataframe td {
-text-align: left;
+  text-align: left;
+}
+.st-dy {
+  padding-right: 0;
+}
+#MainMenu {
+  visibility: hidden;
+  color: rgb(15, 23, 42);
+}
+footer {
+  visibility: hidden;
 }
 
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-
 .bottom-button {
-    position: fixed;
-    bottom: 20px;
-    right: 50%;
-    transform: translateX(-50%);
-  }
+  position: fixed;
+  bottom: 20px;
+  right: 50%;
+  transform: translateX(-50%);
+}
+
+.st-emotion-cache-6qob1r {
+  background-color: #fff;
+  border-right: solid 1px rgb(229 231 235);
+}
+
+.st-emotion-cache-fblp2m {
+  fill: rgb(55 65 81);
+}
+
+.st-emotion-cache-1m6wrpk,
+.st-emotion-cache-1dj0hjr {
+  color: rgb(55 65 81);
+  line-height: 1.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  padding: 0.5rem;
+  border-radius: calc(0.5rem - 2px);
+}
+
+.st-emotion-cache-1dj0hjr {
+  color: rgb(79 70 229);
+}
+
+.st-emotion-cache-1xw8zd0 {
+  padding: 0;
+}
+
+.st-emotion-cache-1cypcdb {
+  top: 0;
+}
+
+.main {
+  background-color: #fff;
+}
+
+.st-emotion-cache-1avcm0n {
+  display: none;
+}
+
+.block-container.st-emotion-cache-z5fcl4.ea3mdgi4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  padding-inline: 3rem;
+}
+
+* {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+.st-emotion-cache-1wrcr25 {
+  background-color: #fff;
+}
+
+p,
+ol,
+ul,
+dl,
+p,
+ol,
+ul,
+dl {
+  color: rgb(15, 23, 42);
+}
+
+[multiple],
+[type="date"],
+[type="datetime-local"],
+[type="email"],
+[type="month"],
+[type="number"],
+[type="password"],
+[type="search"],
+[type="tel"],
+[type="text"],
+[type="time"],
+[type="url"],
+[type="week"],
+input:where(:not([type])),
+select,
+textarea {
+  color: rgb(15, 23, 42);
+}
+
+blockquote,
+dd,
+dl,
+figure,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+p,
+pre {
+  padding: 0;
+  margin: 0;
+  color: rgb(15, 23, 42);
+}
+button {
+  background-color: rgb(241, 245, 249) !important;
+  color: rgb(15, 23, 42);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-radius: calc(0.5rem - 2px);
+  justify-content: center;
+  align-items: center;
+  height: 2.5rem;
+  display: inline-flex;
+}
+h3 {
+  color: rgb(17 24 39);
+  line-height: 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.st-dx {
+  padding-right: 0;
+}
+.st-eo {
+  fill: #000;
+}
+
+.st-emotion-cache-nahz7x {
+  margin-bottom: 0;
+}
+
+input {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  background-color: transparent;
+  border-color: hsl(214.3 31.8% 91.4%);
+  border-width: 1px;
+  border-radius: calc(0.5rem - 2px);
+  height: 2.5rem;
+  display: flex;
+  color: rgb(2, 8, 23);
+}
+
+body,
+html,
+#root {
+  background-color: #fff;
+}
+
+div[data-baseweb="select"] > div {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  background-color: transparent;
+  border-color: hsl(214.3 31.8% 91.4%);
+  border-width: 1px;
+  border-radius: calc(0.5rem - 2px);
+  height: 2.5rem;
+  color: rgb(2, 8, 23);
+  display: flex;
+}
+.st-do.st-bw.st-ey.st-ez.st-f0.st-b4.st-df.st-f1.st-dp.st-ec.st-ed.st-ee.st-ef,
+.st-dp.st-bw.st-f0.st-f1.st-f2.st-b4.st-df.st-f3.st-dq.st-ed.st-ee.st-ef.st-eg {
+  padding: 0;
+}
+
+.st-emotion-cache-18ni7ap {
+  display: none;
+}
+[data-baseweb="select"] > div > div {
+  padding: 0;
+}
+
+[data-testid="textInputRootElement"],
+.st-c1 {
+  padding-right: 0;
+}
+
+[data-testid="stNotificationContentWarning"] p,
+[data-testid="stNotificationContentInfo"] p {
+  padding-bottom: 1rem;
+  font-size: 14px;
+}
+
+[data-testid="stSidebarNavLink"] {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+}
+
+[data-testid="stNotification"] {
+  padding-block: 1rem;
+}
